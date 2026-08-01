@@ -1,0 +1,9 @@
+$font-family-custom: 'harmonyos';
+
+@font-face {
+  font-family: $font-family-custom;
+  src: url('../assets/font/HarmonyOS_Sans_Medium.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
