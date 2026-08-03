@@ -1,15 +1,4 @@
-<script setup lang="ts">
-import { useUserStore } from './stores/user'
-
-const userStore = useUserStore()
-
-watchEffect(() => {
-  document.documentElement.style.setProperty(
-    '--app-border-radius',
-    userStore.borderRadius
-  )
-})
-</script>
+<script setup lang="ts"></script>
 
 <template>
   <router-view />
@@ -27,8 +16,8 @@ html,
 }
 
 #app {
-  border-radius: var(--app-border-radius);
-  background-color: #000;
+  border-radius: var(--app-border-radius, 15px);
+  /* background-color: #000; */
   font-family: 'harmonyos';
 }
 

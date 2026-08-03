@@ -1,11 +1,11 @@
 <template>
   <div class="h-full w-full flex flex-col relative">
-    <!-- <video
+    <video
       src="@src/assets/video/Black-Dress-Princess-4K.mp4"
       autoplay
       loop
       class="w-full h-full absolute top-0 left-0 object-fill z-[-1]"
-    ></video> -->
+    ></video>
     <NavHeader />
     <div class="w-full h-[calc(100%-48px)]">
       <div
