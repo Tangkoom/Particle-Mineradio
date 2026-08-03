@@ -19,6 +19,8 @@
     "dayjs": "^1.11.21",
     "esbuild": "0.25.0",
     "glob": "10.5.0",
+    "pinia": "^4.0.2",
+    "pinia-plugin-persistedstate": "^4.7.1",
     "prettier": "^3.9.6",
     "reka-ui": "^2.10.1",
     "sass": "^1.102.0",

@@ -28,5 +28,9 @@ declare module 'vue' {
     ProgressRoot: typeof import('reka-ui')['ProgressRoot']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    ScrollAreaRoot: typeof import('reka-ui')['ScrollAreaRoot']
+    ScrollAreaScrollbar: typeof import('reka-ui')['ScrollAreaScrollbar']
+    ScrollAreaThumb: typeof import('reka-ui')['ScrollAreaThumb']
+    ScrollAreaViewport: typeof import('reka-ui')['ScrollAreaViewport']
   }
 }

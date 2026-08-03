@@ -63,16 +63,19 @@
       class="window-controls w-35 h-full pr-2 flex items-center justify-around"
     >
       <div
+        @click="minimize"
         class="common-transparent cursor-pointer w-7 h-7 rounded-lg flex items-center justify-center"
       >
         <Minus color="white" :size="16" />
       </div>
       <div
+        @click="fullScreen"
         class="common-transparent cursor-pointer w-7 h-7 rounded-lg flex items-center justify-center"
       >
         <Square color="white" :size="14" />
       </div>
       <div
+        @click="closeApp"
         class="cursor-pointer commmon-shadow hover:bg-red-500 w-7 h-7 rounded-lg flex items-center justify-center"
       >
         <X color="white" :size="16" />
@@ -82,7 +85,12 @@
 </template>
 
 <script setup lang="ts">
+import { getCurrentWindow } from '@tauri-apps/api/window'
 import { Minus, X, Square, Search } from '@lucide/vue'
+import { useUserStore } from '@src/stores/user'
+
+const currentWindow = getCurrentWindow()
+const userStore = useUserStore()
 
 const isFocus = ref<boolean>(false)
 const options = ref<Record<string, any>[]>([])
@@ -93,6 +101,21 @@ const search = (): void => {
 
 const onBlur = (): void => {
   isFocus.value = false
+}
+
+const minimize = async (): Promise<void> => {
+  await currentWindow.minimize()
+}
+
+const fullScreen = async (): Promise<void> => {
+  await currentWindow.toggleMaximize()
+  const isMaximized = await currentWindow.isMaximized()
+  if (isMaximized) userStore.borderRadius = '0px'
+  else userStore.borderRadius = '15px'
+}
+
+const closeApp = async (): Promise<void> => {
+  await currentWindow.close()
 }
 </script>
 

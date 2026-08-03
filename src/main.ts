@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import { createI18n } from 'vue-i18n'
 import router from './router'
+import pinia from './stores'
 import './styles/theme.scss'
 import './styles/index.css'
 import './styles/index.scss'
@@ -24,4 +25,8 @@ const i18n = createI18n({
 
 i18n.global.locale.value = 'zh-cn'
 
-createApp(App).use(i18n).use(router).mount('#app')
+const app = createApp(App)
+
+app.use(i18n).use(router).use(pinia)
+
+app.mount('#app')

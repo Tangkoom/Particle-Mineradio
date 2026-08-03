@@ -12,7 +12,7 @@
         class="w-full h-[calc(100%-100px)] p-5 pb-0 box-border flex items-center justify-between"
       >
         <div
-          class="basis-[35%] grow-0 shrink-0 h-full rounded-2xl relative transform transition-all! duration-300 ease-in-out opacity-100% daily-review-card"
+          class="w-[35%] h-full rounded-2xl relative transform transition-all! duration-300 ease-in-out opacity-100% daily-review-card"
           :class="{
             '-translate-x-full opacity-0': isImmersion
           }"
@@ -21,7 +21,7 @@
             <div class="text-[12px] font-bold text-[#AFACAC]">
               {{ currentData.date }}
             </div>
-            <div class="text-white text-[60px] leading-15 font-bold mb-2">
+            <div class="text-white text-[70px] leading-17.5 font-bold mb-2">
               {{ currentData.time }}
             </div>
             <div class="text-white text-[24px] font-bold mb-2">
@@ -33,17 +33,17 @@
             </div>
             <div class="flex items-center">
               <div
-                class="p-[4px_8px] text-[12px] text-[#AFACAC] border border-solid border-[#171717] rounded-2xl cursor-pointer mr-2"
+                class="tag p-[4px_8px] text-[12px] text-[#AFACAC] border border-solid border-[#171717] rounded-2xl cursor-pointer mr-2"
               >
                 换一条
               </div>
               <div
-                class="p-[4px_8px] text-[12px] text-[#AFACAC] border border-solid border-[#171717] rounded-2xl cursor-pointer mr-2"
+                class="tag p-[4px_8px] text-[12px] text-[#AFACAC] border border-solid border-[#171717] rounded-2xl cursor-pointer mr-2"
               >
                 选择MP4
               </div>
               <div
-                class="p-[4px_8px] text-[12px] text-[#AFACAC] border border-solid border-[#171717] rounded-2xl cursor-pointer"
+                class="tag p-[4px_8px] text-[12px] text-[#AFACAC] border border-solid border-[#171717] rounded-2xl cursor-pointer"
               >
                 展开播放器控制台
               </div>
@@ -51,7 +51,7 @@
           </div>
         </div>
         <div
-          class="basis-[calc(65%-16px)] grow-0 shrink-0 h-full ml-4 relative transform transition-all! duration-300 ease-in-out opacity-100%"
+          class="w-[calc(65%-16px)] h-full ml-4 relative transform transition-all! duration-300 ease-in-out opacity-100%"
           :class="{
             'translate-x-full opacity-0': isImmersion
           }"
@@ -69,11 +69,169 @@
                 <div class="text-white text-[20px] font-bold">
                   {{ item.title }}
                 </div>
-                <div class="text-[#808080] text-[12px]">{{ item.sub }}</div>
+                <div class="text-[rgba(255,255,255,0.55)] text-[12px]">
+                  {{ item.sub }}
+                </div>
               </div>
               <div></div>
             </div>
           </div>
+          <ScrollAreaRoot
+            class="w-full h-[calc(100%-260px)] mt-5 relative overflow-hidden"
+            style="--scrollbar-size: 10px"
+          >
+            <ScrollAreaViewport class="w-full h-full rounded">
+              <div class="w-full flex items-center">
+                <div class="w-[55%] commonly-used rounded-2xl p-[12px_20px]">
+                  <div class="flex items-center justify-between">
+                    <span class="text-[rgba(255,255,255,0.82)] text-[10px]"
+                      >LISTENING TODAY · 今日聆听</span
+                    >
+                    <span
+                      class="text-[rgba(255,255,255,0.42)] text-[10px] cursor-pointer hover:text-white"
+                      >查看偏好</span
+                    >
+                  </div>
+                  <div class="flex items-center justify-between mt-2">
+                    <div class="flex-1 flex flex-col">
+                      <span class="text-white text-[20px] font-bold"
+                        >0分钟</span
+                      >
+                      <span class="text-[rgba(255,255,255,0.42)] text-[10px]">
+                        聆听时长
+                      </span>
+                    </div>
+                    <div class="flex-1 flex flex-col">
+                      <span class="text-white text-[20px] font-bold">2首</span>
+                      <span class="text-[rgba(255,255,255,0.42)] text-[10px]">
+                        今日听歌
+                      </span>
+                    </div>
+                    <div class="flex-1 flex flex-col">
+                      <span class="text-white text-[20px] font-bold"
+                        >蔡健雅</span
+                      >
+                      <span class="text-[rgba(255,255,255,0.42)] text-[10px]">
+                        连续聆听1天
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="w-[calc(45%-16px)] ml-4 commonly-used rounded-2xl p-[12px_14px] flex items-center justify-between"
+                >
+                  <div class="flex items-center h-full">
+                    <img src="" class="w-17 h-17 rounded-xl bg-[#ccc]" />
+                    <div class="flex flex-col h-full justify-between ml-2">
+                      <div
+                        class="text-[rgba(255,255,255,0.82)] text-[10px] pb-1.75"
+                      >
+                        NEXT UP · 接下来播放
+                      </div>
+                      <div
+                        class="text-[rgba(255,255,255,0.82)] text-[14px] pb-1.75"
+                      >
+                        情不自禁
+                      </div>
+                      <div class="text-[rgba(255,255,255,0.42)] text-[10px]">
+                        胡彦斌
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    class="p-1 rounded-4xl common-transparent cursor-pointer"
+                  >
+                    <ChevronRight color="white" :size="18" />
+                  </div>
+                </div>
+              </div>
+              <div class="w-full flex items-center mt-4">
+                <div
+                  class="w-full commonly-used rounded-2xl p-[12px_20px] flex items-center justify-between"
+                >
+                  <div>
+                    <div class="text-[rgba(255,255,255,0.82)] text-[10px] pb-1">
+                      FOR YOU · 为你挑选
+                    </div>
+                    <div class="text-white text-[18px] font-bold">
+                      换一首，也许正和心意
+                    </div>
+                    <div class="text-[rgba(255,255,255,0.42)] text-[10px]">
+                      从每日推荐、歌单与本地音乐中挑选
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="w-full flex items-center mt-4">
+                <div
+                  class="w-[55%] commonly-used rounded-2xl p-[12px_20px] flex items-center justify-between"
+                >
+                  <div
+                    class="w-[calc(100%-84px)] flex flex-col justify-between h-full"
+                  >
+                    <div class="text-[rgba(255,255,255,0.82)] text-[10px] pb-1">
+                      DISCOVER · 音乐发现
+                    </div>
+                    <div class="text-white text-[18px] font-bold">
+                      平台热歌与个人偏好
+                    </div>
+                    <div
+                      class="text-[rgba(255,255,255,0.42)] text-[10px] truncate"
+                    >
+                      打开平台推荐中心，没有可信推荐接口时会明确留空
+                    </div>
+                  </div>
+                  <div class="flex items-center">
+                    <div class="transparent-btn">
+                      <ChartNoAxesColumn color="white" :size="22" />
+                    </div>
+                    <div
+                      class="ml-1 p-1 rounded-4xl common-transparent cursor-pointer box-border"
+                    >
+                      <ChevronRight color="white" :size="18" />
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="w-[calc(45%-16px)] ml-4 commonly-used rounded-2xl p-[12px_14px] flex items-center justify-between"
+                >
+                  <div
+                    class="w-[calc(100%-84px)] flex flex-col justify-between h-full"
+                  >
+                    <div class="text-[rgba(255,255,255,0.82)] text-[10px] pb-1">
+                      PLATFORM PICKS · 平台推荐
+                    </div>
+                    <div class="text-white text-[18px] font-bold">
+                      推荐电台/歌单
+                    </div>
+                    <div
+                      class="text-[rgba(255,255,255,0.42)] text-[10px] truncate"
+                    >
+                      读取每日歌曲、推荐歌单与推荐 Feed，不用关键词搜索
+                    </div>
+                  </div>
+                  <div class="flex items-center">
+                    <div class="transparent-btn">
+                      <AudioLines color="white" :size="22" />
+                    </div>
+                    <div
+                      class="ml-1 p-1 rounded-4xl common-transparent cursor-pointer box-border"
+                    >
+                      <ChevronRight color="white" :size="18" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ScrollAreaViewport>
+            <ScrollAreaScrollbar
+              class="flex select-none touch-none p-0.5 z-20 transition-colors duration-160 ease-out hover:bg-blackA2 data-[orientation=vertical]:w-2.5 data-[orientation=horizontal]:flex-col data-[orientation=horizontal]:h-2.5"
+              orientation="vertical"
+            >
+              <ScrollAreaThumb
+                class="flex-1 rounded-[10px] relative before:content-[''] before:absolute before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:w-full before:h-full before:min-w-11 before:min-h-11"
+              />
+            </ScrollAreaScrollbar>
+          </ScrollAreaRoot>
         </div>
       </div>
       <!-- 播放器 -->
@@ -89,7 +247,7 @@
 <script setup lang="ts">
 import NavHeader from './header/index.vue'
 import BottomBar from './bottom-bar/index.vue'
-import { Minus } from '@lucide/vue'
+import { Minus, ChevronRight, AudioLines, ChartNoAxesColumn } from '@lucide/vue'
 import { commonlyUsedItem } from './util'
 import dayjs from 'dayjs'
 
@@ -125,7 +283,7 @@ const playOrder = (order: string): void => {
 
 onMounted(() => {
   updateCurrentTime()
-  timer = setInterval(updateCurrentTime, 1000)
+  timer = setInterval(updateCurrentTime)
 })
 
 onUnmounted(() => {
@@ -182,5 +340,28 @@ onUnmounted(() => {
       opacity: 0.56;
     }
   }
+}
+
+.tag:hover {
+  color: #fff;
+  border-color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.transparent-btn {
+  position: relative;
+  width: 54px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background:
+    radial-gradient(
+      circle at 50% 50%,
+      rgba(var(--fc-accent-rgb), 0.23),
+      transparent 60%
+    ),
+    rgba(255, 255, 255, 0.035);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.11);
 }
 </style>
