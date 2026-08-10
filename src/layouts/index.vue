@@ -1,11 +1,13 @@
 <template>
   <div class="h-full w-full flex flex-col relative">
-    <video
+    <!-- <video
       src="@src/assets/video/Black-Dress-Princess-4K.mp4"
       autoplay
+      muted
       loop
+      playsinline
       class="w-full h-full absolute top-0 left-0 object-fill z-[-1]"
-    ></video>
+    ></video> -->
     <NavHeader />
     <div class="w-full h-[calc(100%-48px)]">
       <div
@@ -61,6 +63,7 @@
               v-for="(item, index) in commonlyUsedItem"
               :key="index"
               class="rounded-2xl commonly-used flex items-center justify-between p-5 box-border cursor-pointer"
+              @click="onClick(item)"
             >
               <div>
                 <div class="text-white text-[12px] font-bold">
@@ -94,9 +97,9 @@
                   </div>
                   <div class="flex items-center justify-between mt-2">
                     <div class="flex-1 flex flex-col">
-                      <span class="text-white text-[20px] font-bold"
-                        >0分钟</span
-                      >
+                      <span class="text-white text-[20px] font-bold">
+                        <a href="https://music.163.com/">0分钟</a>
+                      </span>
                       <span class="text-[rgba(255,255,255,0.42)] text-[10px]">
                         聆听时长
                       </span>
@@ -250,8 +253,9 @@ import BottomBar from './bottom-bar/index.vue'
 import { Minus, ChevronRight, AudioLines, ChartNoAxesColumn } from '@lucide/vue'
 import { commonlyUsedItem } from './util'
 import dayjs from 'dayjs'
+// import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 
-let timer: number | null
+let timer: any
 
 const isImmersion = ref<boolean>(false)
 
@@ -279,6 +283,24 @@ const playOrder = (order: string): void => {
   } else if (order === 'shuffle') {
     currentData.value.order = 'repeat'
   }
+}
+
+const onClick = (item: Record<string, any>): void => {
+  console.log(item)
+  // const webview = new WebviewWindow('settings', {
+  //   url: '/settings',
+  //   title: '设置',
+  //   width: 400,
+  //   height: 600,
+  //   center: true
+  // })
+  // webview.once('tauri://created', function () {
+  //   webview.show()
+  //   console.log('窗口创建成功')
+  // })
+  // webview.once('tauri://error', function (e) {
+  //   console.error('窗口创建失败', e)
+  // })
 }
 
 onMounted(() => {

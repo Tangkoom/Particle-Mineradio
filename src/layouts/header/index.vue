@@ -1,9 +1,26 @@
 <template>
   <div
-    class="titlebar h-12 w-full flex items-center justify-between"
+    class="titlebar h-12 w-full flex items-center justify-between px-2"
     data-tauri-drag-region
   >
     <div class="w-35"></div>
+    <div
+      id="common-transparent"
+      class="w-38 h-12 flex items-center px-2 rounded-4xl fixed top-2 left-2"
+    >
+      <AvatarRoot
+        class="bg-blackA3 inline-flex h-9 w-9 select-none items-center justify-center overflow-hidden rounded-full align-middle"
+      >
+        <AvatarImage
+          class="h-full w-full rounded-[inherit] object-cover"
+          src="https://images.unsplash.com/photo-1511485977113-f34c92461ad9?ixlib=rb-1.2.1&w=128&h=128&dpr=2&q=80"
+          alt="Pedro Duarte"
+        />
+      </AvatarRoot>
+      <div class="text-white text-[12px] pl-1 truncate w-[calc(100%-40px)]">
+        七颗冰糖多少钱
+      </div>
+    </div>
     <AutocompleteRoot class="relative w-[calc(100%-600px)]">
       <AutocompleteAnchor
         id="common-transparent"
@@ -59,9 +76,7 @@
         </AutocompleteViewport>
       </AutocompleteContent>
     </AutocompleteRoot>
-    <div
-      class="window-controls w-35 h-full pr-2 flex items-center justify-around"
-    >
+    <div class="window-controls w-35 h-full flex items-center justify-around">
       <div
         @click="minimize"
         class="common-transparent cursor-pointer w-7 h-7 rounded-lg flex items-center justify-center"

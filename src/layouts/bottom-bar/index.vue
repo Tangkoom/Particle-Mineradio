@@ -37,7 +37,7 @@
         <div class="cursor-pointer p-1 rounded-lg common-transparent mx-2">
           <SkipBack color="white" :size="18" />
         </div>
-        <div class="cursor-pointer p-3 rounded-4xl common-transparent">
+        <div id="common-transparent" class="cursor-pointer p-3 rounded-4xl">
           <Pause
             v-if="playArea"
             color="white"
