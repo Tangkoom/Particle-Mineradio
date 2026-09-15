@@ -1,10 +1,10 @@
-# mineRadio
+# Particle-Mineradio
 
 <p align="center">
-  <img src="/public/icon.png" width="128" height="128" alt="mineRadio" />
+  <img src="/public/icon.png" width="128" height="128" alt="Particle-Mineradio" />
 </p>
 
-mineradio 是一款 Windows 桌面沉浸式音乐播放器，结合天气电台、搜索播放、歌词舞台、粒子视觉和 3D 歌单架，提供更接近现场感的私人音乐空间。
+Particle-Mineradio 是一款 Windows 桌面沉浸式音乐播放器，结合天气电台、搜索播放、歌词舞台、粒子视觉和 3D 歌单架，提供更接近现场感的私人音乐空间。
 
 项目主线基于 Tauri2 构建，前端、桌面能力、本地服务和共享类型分层开发，重点关注轻量桌面体验、视觉表现、播放稳定性和本地隐私。
 
@@ -71,12 +71,12 @@ cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml --locked
 
 ## 安装正式版
 
-正式安装包只从本仓库的 [GitHub Releases](https://github.com/Tangkoom/mineradio) 获取。Windows 可能显示 SmartScreen 提示；请先确认下载页面和安装包来源确实是上述官方仓库，再按系统提示手动确认运行。不要为安装本应用关闭 Defender 或 SmartScreen。
+正式安装包只从本仓库的 [GitHub Releases](https://github.com/Tangkoom/Particle-Mineradio) 获取。Windows 可能显示 SmartScreen 提示；请先确认下载页面和安装包来源确实是上述官方仓库，再按系统提示手动确认运行。不要为安装本应用关闭 Defender 或 SmartScreen。
 
 ## 项目结构
 
 ```text
-mineradio/
+Particle-Mineradio/
 ├─ .github/
 │  └─ ISSUE_TEMPLATE/   # Issue 模板
 ├─ src/
@@ -97,8 +97,8 @@ mineradio/
 
 ## 第三方音乐平台说明
 
-- mineradio 是一个非官方的音乐播放器，与网易云音乐、QQ 音乐或腾讯音乐娱乐集团无关。
-- mineradio 不是网易云音乐、QQ 音乐或腾讯音乐娱乐集团的官方客户端，也不隶属于任何音乐平台。
+- Particle-Mineradio 是一个非官方的音乐播放器，与网易云音乐、QQ 音乐或腾讯音乐娱乐集团无关。
+- Particle-Mineradio 不是网易云音乐、QQ 音乐或腾讯音乐娱乐集团的官方客户端，也不隶属于任何音乐平台。
 
 项目中的第三方平台接入仅用于个人学习、本地客户端体验和用户自有账号的播放辅助。请遵守对应平台的用户协议、版权规则和会员权益规则。项目不会提供绕过付费、绕过会员、破解音质或重新分发音乐内容的能力。
 
@@ -114,7 +114,7 @@ mineradio/
 
 ## 致谢
 
-mineradio 由 XxHuberrr的Minerdio改造而来[GitHub Releases](https://github.com/XxHuberrr/Mineradio)。
+Particle-Mineradio 由 XxHuberrr的Mineradio改造而来[GitHub Releases](https://github.com/XxHuberrr/Mineradio)。
 
 ## 版权与授权
 
@@ -122,4 +122,4 @@ Copyright (C) 2026 XxHuberrr.
 
 本项目原创核心代码采用 GPL-3.0-only 授权。Sonic Topography 视觉层基于已记录的来源链、维护者审阅的公开合作证据与项目决策进行迁移，并保留其单独的 `Non-Commercial Learning License` 与个人非商业限制；该证据不等于额外书面授权、再许可或许可放宽。完整来源链、适用范围和许可正文见 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md)。
 
-mineradio 名称、界面视觉设计与原创视觉表达归作者所有；第三方依赖和第三方服务分别遵循其各自授权与服务条款。
+Particle-Mineradio 名称、界面视觉设计与原创视觉表达归作者所有；第三方依赖和第三方服务分别遵循其各自授权与服务条款。

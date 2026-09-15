@@ -1,7 +1,7 @@
 {
-  "productName": "mineradio",
+  "productName": "Particle-Mineradio",
   "version": "0.1.0",
-  "identifier": "com.tauri-app.mineradio",
+  "identifier": "com.tauri-app.Particle-Mineradio",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1421",
@@ -13,7 +13,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "Mineradio",
+        "title": "Particle-Mineradio",
         "width": 1000,
         "height": 600,
         "minWidth": 1000,
