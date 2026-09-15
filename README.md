@@ -1,7 +1,7 @@
 # mineRadio
 
 <p align="center">
-  <img src="/icon.ico" width="128" height="128" alt="mineRadio icon" />
+  <img src="/public/icon.png" width="128" height="128" alt="mineRadio" />
 </p>
 
 mineradio 是一款 Windows 桌面沉浸式音乐播放器，结合天气电台、搜索播放、歌词舞台、粒子视觉和 3D 歌单架，提供更接近现场感的私人音乐空间。
