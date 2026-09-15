@@ -1,5 +1,6 @@
 <template>
   <div class="w-full p-[20px_100px] box-border">
+    <!-- style="background: linear-gradient(90deg, #72749a 0%, #fff5df 100%)" -->
     <div
       id="common-transparent"
       class="border border-solid border-[#171717] shadow-lg rounded-4xl p-[8px_15px] flex items-center justify-between"

@@ -4,13 +4,15 @@
   "identifier": "com.tauri-app.mineradio",
   "build": {
     "beforeDevCommand": "pnpm dev",
-    "devUrl": "http://localhost:1420",
+    "devUrl": "http://localhost:1421",
     "beforeBuildCommand": "pnpm build",
     "frontendDist": "../dist"
   },
   "app": {
+    "withGlobalTauri": true,
     "windows": [
       {
+        "label": "main",
         "title": "Mineradio",
         "width": 1000,
         "height": 600,
@@ -19,8 +21,7 @@
         "decorations": false,
         "center": true,
         "shadow": false,
-        "transparent": true,
-        "additionalBrowserArgs": "--enable-gpu --ignore-gpu-blocklist --enable-accelerated-video-decode"
+        "transparent": true
       }
     ],
     "security": {

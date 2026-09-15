@@ -253,7 +253,7 @@ import BottomBar from './bottom-bar/index.vue'
 import { Minus, ChevronRight, AudioLines, ChartNoAxesColumn } from '@lucide/vue'
 import { commonlyUsedItem } from './util'
 import dayjs from 'dayjs'
-// import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
+import createWindow from '@src/utils/createWindow'
 
 let timer: any
 
@@ -287,20 +287,15 @@ const playOrder = (order: string): void => {
 
 const onClick = (item: Record<string, any>): void => {
   console.log(item)
-  // const webview = new WebviewWindow('settings', {
-  //   url: '/settings',
-  //   title: '设置',
-  //   width: 400,
-  //   height: 600,
-  //   center: true
-  // })
-  // webview.once('tauri://created', function () {
-  //   webview.show()
-  //   console.log('窗口创建成功')
-  // })
-  // webview.once('tauri://error', function (e) {
-  //   console.error('窗口创建失败', e)
-  // })
+  createWindow.createWin({
+    label: 'settings',
+    url: '/settings',
+    width: 400,
+    height: 600,
+    decorations: false,
+    transparent: true,
+    shadow: false
+  })
 }
 
 onMounted(() => {
