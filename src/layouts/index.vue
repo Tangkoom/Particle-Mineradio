@@ -289,6 +289,7 @@ const onClick = (item: Record<string, any>): void => {
   console.log(item)
   createWindow.createWin({
     label: 'settings',
+    title: '设置',
     url: '/settings',
     width: 400,
     height: 600,
