@@ -17,7 +17,10 @@
           alt="Pedro Duarte"
         />
       </AvatarRoot>
-      <div class="text-white text-[12px] pl-1 truncate w-[calc(100%-40px)]">
+      <div
+        class="text-white text-[12px] pl-1 truncate w-[calc(100%-40px)]"
+        @click="loginURL"
+      >
         七颗冰糖多少钱
       </div>
     </div>
@@ -103,10 +106,10 @@
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { Minus, X, Square, Search } from '@lucide/vue'
 import { useUserStore } from '@src/stores/user'
+import createWindow from '@src/utils/createWindow'
 
 const currentWindow = getCurrentWindow()
 const userStore = useUserStore()
-
 
 const isFocus = ref<boolean>(false)
 const options = ref<Record<string, any>[]>([])
@@ -136,6 +139,17 @@ const fullScreen = async (): Promise<void> => {
 
 const closeApp = async (): Promise<void> => {
   await currentWindow.close()
+}
+
+const loginURL = (): void => {
+  createWindow.createWin({
+    label: 'login',
+    title: '网易云登录',
+    url: 'https://music.163.com/#/login',
+    width: 1045,
+    height: 600,
+    decorations: true
+  })
 }
 </script>
 
