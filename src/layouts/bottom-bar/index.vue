@@ -120,4 +120,20 @@ const playOrder = (order: string): void => {
 }
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.liquid-glass {
+  /* 公式：模糊 + 提饱和 + 微调亮度 */
+  -webkit-backdrop-filter: blur(14px) saturate(1.7) brightness(1.05);
+  backdrop-filter: blur(14px) saturate(1.7) brightness(1.05);
+
+  /* 半透明底色：不要纯白，留一点通透 */
+  background: rgba(255, 255, 255, 0.35);
+  /* 边缘高光：双层 box-shadow 模拟玻璃切面 */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.25),
+    0 8px 32px rgba(0, 0, 0, 0.12);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+}
+</style>
