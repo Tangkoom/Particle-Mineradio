@@ -23,6 +23,7 @@ type WindowConfig = {
   visible?: boolean
   transparent?: boolean
   shadow?: boolean
+  skipTaskbar?: boolean
 }
 
 const windowConfig: WindowConfig = {

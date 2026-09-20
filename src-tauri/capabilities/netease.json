@@ -1,0 +1,10 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "netease-remote",
+  "description": "允许网易云音乐登录窗口与隐藏 API 桥接窗口把同源请求结果（含登录态接口数据）以事件形式回传给主窗口",
+  "remote": {
+    "urls": ["https://music.163.com/*", "http://music.163.com/*"]
+  },
+  "windows": ["login", "api-bridge"],
+  "permissions": ["core:event:allow-emit", "core:event:allow-emit-to"]
+}

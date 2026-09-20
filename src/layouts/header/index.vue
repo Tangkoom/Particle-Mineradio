@@ -14,20 +14,24 @@
             class="bg-black inline-flex h-9 w-9 select-none items-center justify-center overflow-hidden rounded-full align-middle"
           >
             <AvatarImage
-              class="h-full w-full rounded-[inherit] object-cover"
-              src="avatarUrl"
+              v-if="userStore.profile?.avatarUrl"
+              class="h-full w-full rounded-inherit object-cover"
+              :src="userStore.profile.avatarUrl"
               alt="用户头像"
             />
+            <User v-else color="rgba(255,255,255,0.8)" :size="18" />
           </AvatarRoot>
           <div class="text-white text-[12px] pl-1 truncate w-[calc(100%-40px)]">
-            nickname
+            {{ userStore.profile?.nickname || '未登录' }}
           </div>
         </DialogTrigger>
       </template>
       <template #close>
         <div
           id="common-transparent"
-          class="text-[rgba(255,226,226,.78)] px-2.75 flex items-center justify-center bg-[rgb(92,25,31)]! rounded-lg text-[14px]"
+          class="text-[rgba(255,226,226,.78)] px-2.75 flex items-center justify-center bg-[rgb(92,25,31)]! rounded-lg text-[14px] cursor-pointer"
+          :class="{ 'opacity-40 pointer-events-none': !userStore.isLoggedIn }"
+          @click="handleLogout"
         >
           退出登录
         </div>
@@ -101,8 +105,8 @@
                 <div class="provider-logo">QR</div>
                 <b
                   class="font-bold text-white text-[13px] pl-2.75"
-                  @click="handleAvatarClick"
-                  >扫码</b
+                  @click="handleLogin"
+                  >{{ logging ? '登录中…' : '扫码登录' }}</b
                 >
               </div>
               <div
@@ -135,7 +139,11 @@
         </div>
       </template>
     </ComDialog>
-    <AutocompleteRoot class="relative w-[calc(100%-600px)]">
+    <AutocompleteRoot
+      v-model="keyword"
+      :ignore-filter="true"
+      class="relative w-[calc(100%-600px)]"
+    >
       <AutocompleteAnchor
         id="common-transparent"
         class="window-controls relative rounded-4xl min-w-85 w-full inline-flex items-center justify-between px-3.75 text-xs h-8.75 gap-1.25 transform transition-all duration-300 ease-in-out"
@@ -177,9 +185,10 @@
 
               <AutocompleteItem
                 v-for="option in group.children"
-                :key="option.name"
+                :key="option.song.id"
                 :value="option.name"
                 class="text-xs leading-none text-grass11 rounded-[3px] flex items-center h-6.25 pr-8.75 pl-6.25 relative select-none data-disabled:text-mauve8 data-disabled:pointer-events-none data-highlighted:outline-none data-highlighted:bg-grass9 data-highlighted:text-grass1"
+                @select="onSelectSong(option)"
               >
                 <span>
                   {{ option.name }}
@@ -215,9 +224,22 @@
 
 <script setup lang="ts">
 import { getCurrentWindow } from '@tauri-apps/api/window'
-import { Minus, X, Square, Search, Menu } from '@lucide/vue'
+import { Minus, X, Square, Search, Menu, User } from '@lucide/vue'
 import { useUserStore } from '@src/stores/user'
-import createWindow from '@src/utils/createWindow'
+import { usePlayerStore } from '@src/stores/player'
+import {
+  loginWithNetease,
+  logoutNetease,
+  ensureBridge,
+  searchSongs,
+  type NeteaseSong
+} from '@src/utils/netease'
+
+/** 搜索结果选项 */
+interface SongOption {
+  name: string
+  song: NeteaseSong
+}
 
 /** 坐标点 */
 interface Point {
@@ -227,12 +249,15 @@ interface Point {
 
 const currentWindow = getCurrentWindow()
 const userStore = useUserStore()
+const playerStore = usePlayerStore()
 
 const switchState = ref(false)
 const isFocus = ref<boolean>(false)
 const isConnecting = ref<boolean>(false)
 const isConnected = ref<boolean>(false)
-const options = ref<Record<string, any>[]>([])
+const keyword = ref<string>('')
+const logging = ref<boolean>(false)
+const options = ref<{ name: string; children: SongOption[] }[]>([])
 
 // ============ 节点连线 ============
 const flowSvgRef = ref<SVGSVGElement | null>(null)
@@ -346,13 +371,100 @@ const onConnectEnd = (e: MouseEvent): void => {
 
 // ============ 搜索相关 ============
 
+let searchTimer: ReturnType<typeof setTimeout> | undefined
+let searchSeq = 0
+/** 选中结果导致输入框回填时，跳过一次搜索 */
+let justSelected = false
+
 const search = (): void => {
   isFocus.value = true
 }
 
 const onBlur = (): void => {
-  isFocus.value = false
+  // 延迟收起，避免点击选项前被遮挡
+  setTimeout(() => {
+    isFocus.value = false
+  }, 160)
 }
+
+watch(keyword, (value) => {
+  if (searchTimer) clearTimeout(searchTimer)
+  if (justSelected) {
+    justSelected = false
+    return
+  }
+  const kw = value.trim()
+  if (!kw || !userStore.isLoggedIn) {
+    options.value = []
+    return
+  }
+  const seq = ++searchSeq
+  searchTimer = setTimeout(async () => {
+    try {
+      const songs = await searchSongs(kw)
+      if (seq !== searchSeq) return
+      options.value = songs.length
+        ? [
+            {
+              name: '单曲',
+              children: songs.map((song) => ({
+                name: `${song.name} - ${song.artist}`,
+                song
+              }))
+            }
+          ]
+        : []
+    } catch (error) {
+      if (seq === searchSeq) options.value = []
+      console.log('搜索失败', error)
+    }
+  }, 350)
+})
+
+/** 选中搜索结果 => 播放 */
+const onSelectSong = (option: SongOption): void => {
+  justSelected = true
+  void playerStore.playSong(option.song)
+}
+
+// ============ 网易云登录 / 登出 ============
+
+/** 打开网易云登录窗口，登录成功后保存用户信息 */
+const handleLogin = async (): Promise<void> => {
+  if (logging.value || userStore.isLoggedIn) return
+  logging.value = true
+  try {
+    const profile = await loginWithNetease()
+    userStore.setProfile(profile)
+  } catch (error) {
+    console.log('网易云登录取消或失败', error)
+  } finally {
+    logging.value = false
+  }
+}
+
+/** 退出登录：停止播放、清除登录态与 WebView Cookie */
+const handleLogout = async (): Promise<void> => {
+  if (!userStore.isLoggedIn) return
+  playerStore.stop()
+  userStore.clearProfile()
+  options.value = []
+  keyword.value = ''
+  try {
+    await logoutNetease()
+  } catch (error) {
+    console.log('清除网易云登录态失败', error)
+  }
+}
+
+// 启动时若本地保留过登录资料，校验隐藏桥接窗口中的 Cookie 是否仍有效
+onMounted(() => {
+  if (userStore.isLoggedIn) {
+    ensureBridge().catch(() => {
+      userStore.clearProfile()
+    })
+  }
+})
 
 // ============ 窗口控制 ============
 
@@ -373,18 +485,6 @@ const fullScreen = async (): Promise<void> => {
 
 const closeApp = async (): Promise<void> => {
   await currentWindow.close()
-}
-
-/** 点击头像区域 */
-const handleAvatarClick = async (): Promise<void> => {
-  createWindow.createWin({
-    label: 'login',
-    title: '网易云登录',
-    url: 'https://music.163.com/#/login',
-    width: 1045,
-    height: 600,
-    decorations: true
-  })
 }
 </script>
 

@@ -9,9 +9,11 @@
         <div class="w-12 h-12 rounded-[50%] bg-[#171717]"></div>
         <div class="ml-1.5">
           <div class="text-white text-[14px] truncate w-31.5">
-            下一次爱情来的时候
+            {{ playerStore.current?.name || '未在播放' }}
           </div>
-          <div class="text-white text-[12px]">蔡健雅</div>
+          <div class="text-white text-[12px] truncate w-31.5">
+            {{ playerStore.current?.artist || '--' }}
+          </div>
         </div>
       </div>
       <div class="flex items-center">
@@ -39,13 +41,24 @@
           <SkipBack color="white" :size="18" />
         </div>
         <div id="common-transparent" class="cursor-pointer p-3 rounded-4xl">
-          <Pause
-            v-if="playArea"
+          <LoaderCircle
+            v-if="playerStore.loading"
             color="white"
             :size="18"
-            @click="playArea = false"
+            class="animate-spin"
           />
-          <Play v-else color="white" :size="18" @click="playArea = true" />
+          <Pause
+            v-else-if="playerStore.isPlaying"
+            color="white"
+            :size="18"
+            @click="playerStore.togglePlay()"
+          />
+          <Play
+            v-else
+            color="white"
+            :size="18"
+            @click="playerStore.togglePlay()"
+          />
         </div>
         <div class="cursor-pointer p-1 rounded-lg common-transparent mx-2">
           <SkipForward color="white" :size="18" />
@@ -66,7 +79,10 @@
         <div class="cursor-pointer p-1 rounded-lg common-transparent">
           <Sparkles color="white" :size="18" @click="openImmersion" />
         </div>
-        <div class="text-white text-[14px]">00:00 / 00:00</div>
+        <div class="text-white text-[14px]">
+          {{ formatPlayTime(playerStore.currentTime) }} /
+          {{ formatPlayTime(playerStore.duration) }}
+        </div>
       </div>
     </div>
   </div>
@@ -87,8 +103,10 @@ import {
   Pause,
   Play,
   SkipForward,
-  ListMusic
+  ListMusic,
+  LoaderCircle
 } from '@lucide/vue'
+import { usePlayerStore, formatPlayTime } from '@src/stores/player'
 
 const { order } = defineProps<{
   order: string
@@ -96,7 +114,7 @@ const { order } = defineProps<{
 
 const emits = defineEmits(['openImmersion', 'playOrder'])
 
-const playArea = ref<boolean>(false)
+const playerStore = usePlayerStore()
 
 const isMuted = computed(() => {
   const volume: number = 100
