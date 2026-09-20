@@ -17,27 +17,30 @@
         </div>
       </div>
       <div class="flex items-center">
-        <div class="cursor-pointer p-1 rounded-lg common-transparent mx-2">
+        <div
+          class="cursor-pointer p-1 rounded-lg common-transparent mx-2"
+          @click="playerStore.cyclePlayOrder()"
+        >
           <Repeat
-            v-if="order === 'repeat'"
+            v-if="playerStore.playOrder === 'repeat'"
             color="white"
             :size="18"
-            @click="playOrder('repeat')"
           />
           <Repeat1
-            v-else-if="order === 'repeat1'"
+            v-else-if="playerStore.playOrder === 'repeat1'"
             color="white"
             :size="18"
-            @click="playOrder('repeat1')"
           />
           <Shuffle
-            v-else-if="order === 'shuffle'"
+            v-else-if="playerStore.playOrder === 'shuffle'"
             color="white"
             :size="18"
-            @click="playOrder('shuffle')"
           />
         </div>
-        <div class="cursor-pointer p-1 rounded-lg common-transparent mx-2">
+        <div
+          class="cursor-pointer p-1 rounded-lg common-transparent mx-2"
+          @click="playerStore.playPrev()"
+        >
           <SkipBack color="white" :size="18" />
         </div>
         <div id="common-transparent" class="cursor-pointer p-3 rounded-4xl">
@@ -60,11 +63,14 @@
             @click="playerStore.togglePlay()"
           />
         </div>
-        <div class="cursor-pointer p-1 rounded-lg common-transparent mx-2">
+        <div
+          class="cursor-pointer p-1 rounded-lg common-transparent mx-2"
+          @click="playerStore.playNext()"
+        >
           <SkipForward color="white" :size="18" />
         </div>
         <div class="cursor-pointer p-1 rounded-lg common-transparent mx-2">
-          <ListMusic color="white" :size="18" />
+          <ListMusic color="white" :size="18" @click.stop="openMusicList" />
         </div>
       </div>
       <div class="flex items-center justify-between w-45">
@@ -108,11 +114,7 @@ import {
 } from '@lucide/vue'
 import { usePlayerStore, formatPlayTime } from '@src/stores/player'
 
-const { order } = defineProps<{
-  order: string
-}>()
-
-const emits = defineEmits(['openImmersion', 'playOrder'])
+const emits = defineEmits(['openImmersion', 'openMusicList'])
 
 const playerStore = usePlayerStore()
 
@@ -133,8 +135,8 @@ const openImmersion = (): void => {
   emits('openImmersion')
 }
 
-const playOrder = (order: string): void => {
-  emits('playOrder', order)
+const openMusicList = (): void => {
+  emits('openMusicList')
 }
 </script>
 

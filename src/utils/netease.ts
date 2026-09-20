@@ -37,6 +37,15 @@ export interface NeteaseSong {
   duration: number
 }
 
+/** 网易云歌单元信息 */
+export interface NeteasePlaylist {
+  id: number
+  name: string
+  coverImgUrl: string
+  trackCount: number
+  playCount: number
+}
+
 interface BridgePayload<T = unknown> {
   ok: boolean
   status?: number
@@ -372,6 +381,77 @@ export async function getSongUrl(id: number): Promise<string> {
   throw new Error(
     lastData?.data?.[0]?.message || '该歌曲暂无播放版权，换一首试试吧'
   )
+}
+
+/** 获取当前登录用户的歌单列表（含「我喜欢的音乐」等） */
+export async function getUserPlaylists(
+  uid: number
+): Promise<NeteasePlaylist[]> {
+  await ensureBridge()
+  const data: any = await requestFromWindow(
+    BRIDGE_LABEL,
+    'GET',
+    `/api/user/playlist?uid=${uid}&limit=30&offset=0`
+  )
+  if (data?.code !== 200) {
+    throw new Error(data?.msg || '获取歌单列表失败')
+  }
+  const list: any[] = data?.playlist ?? []
+  return list.map((p) => ({
+    id: p.id,
+    name: p.name ?? '未知歌单',
+    coverImgUrl: toHttps(p.coverImgUrl ?? ''),
+    trackCount: p.trackCount ?? 0,
+    playCount: p.playCount ?? 0
+  }))
+}
+
+/** 获取歌单内全部歌曲 ID（优先 trackIds，兼容 tracks） */
+export async function getPlaylistTrackIds(
+  playlistId: number
+): Promise<number[]> {
+  await ensureBridge()
+  const data: any = await requestFromWindow(
+    BRIDGE_LABEL,
+    'GET',
+    `/api/v6/playlist/detail?id=${playlistId}&n=1000`
+  )
+  if (data?.code !== 200) {
+    throw new Error(data?.msg || '获取歌单详情失败')
+  }
+  const playlist = data?.playlist ?? {}
+  const trackIds: any[] = playlist.trackIds ?? playlist.tracks ?? []
+  return trackIds
+    .map((t: any) => (typeof t === 'number' ? t : t?.id))
+    .filter((id: any): id is number => typeof id === 'number')
+}
+
+/** 批量获取歌曲详情（每次最多 100 首） */
+export async function getSongDetails(ids: number[]): Promise<NeteaseSong[]> {
+  if (!ids.length) return []
+  await ensureBridge()
+  const result: NeteaseSong[] = []
+  for (let i = 0; i < ids.length; i += 100) {
+    const chunk = ids.slice(i, i + 100)
+    const idsParam = encodeURIComponent(JSON.stringify(chunk))
+    const data: any = await requestFromWindow(
+      BRIDGE_LABEL,
+      'GET',
+      `/api/song/detail?ids=${idsParam}`
+    )
+    if (data?.code !== 200) continue
+    const songs: any[] = data?.songs ?? []
+    result.push(...songs.map(normalizeSong).filter((s) => s.id))
+  }
+  return result
+}
+
+/** 一次性加载歌单的全部可播放歌曲 */
+export async function getPlaylistSongs(
+  playlistId: number
+): Promise<NeteaseSong[]> {
+  const ids = await getPlaylistTrackIds(playlistId)
+  return getSongDetails(ids)
 }
 
 /** 退出登录：关闭桥接 / 登录窗口并清空 WebView2 浏览数据（含 HttpOnly MUSIC_U） */

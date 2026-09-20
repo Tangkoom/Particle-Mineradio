@@ -244,6 +244,7 @@ import {
   logoutNetease,
   ensureBridge,
   searchSongs,
+  getUserPlaylists,
   type NeteaseSong
 } from '@src/utils/netease'
 
@@ -462,13 +463,21 @@ const closeApp = async (): Promise<void> => {
 
 // ============ 网易云登录 / 登出 ============
 
-/** 打开网易云登录窗口，登录成功后保存用户信息 */
+/** 打开网易云登录窗口，登录成功后保存用户信息并拉取歌单 */
 const handleLogin = async (): Promise<void> => {
   if (logging.value || userStore.isLoggedIn) return
   logging.value = true
   try {
     const profile = await loginWithNetease()
     userStore.setProfile(profile)
+    // 登录成功后用 Cookie 拉取用户歌单列表
+    try {
+      const playlists = await getUserPlaylists(profile.userId)
+      userStore.setPlaylists(playlists)
+    } catch (error) {
+      console.log('获取歌单列表失败', error)
+      userStore.setPlaylists([])
+    }
   } catch (error) {
     console.log('网易云登录取消或失败', error)
   } finally {

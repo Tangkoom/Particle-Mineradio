@@ -9,9 +9,12 @@
       class="w-full h-full absolute top-0 left-0 object-fill z-[-1]"
     ></video> -->
     <NavHeader />
-    <div class="w-full h-[calc(100%-48px)]">
+    <div
+      class="w-full h-[calc(100%-48px)]"
+      @click.stop="isNavTransition = false"
+    >
       <div
-        class="w-full h-[calc(100%-100px)] p-5 pb-0 box-border flex items-center justify-between"
+        class="relative w-full h-[calc(100%-100px)] p-5 pb-0 box-border flex items-center justify-between"
       >
         <div
           class="w-[35%] h-full rounded-2xl relative transform transition-all! duration-300 ease-in-out opacity-100% daily-review-card"
@@ -63,7 +66,7 @@
               v-for="(item, index) in commonlyUsedItem"
               :key="index"
               class="rounded-2xl commonly-used flex items-center justify-between p-5 box-border cursor-pointer"
-              @click="onClick(item)"
+              @click.stop="onClick(item)"
             >
               <div>
                 <div class="text-white text-[12px] font-bold">
@@ -225,6 +228,69 @@
                   </div>
                 </div>
               </div>
+              <!-- 我的歌单 -->
+              <div
+                v-if="userStore.playlists.length"
+                class="w-full mt-4 commonly-used rounded-2xl p-[12px_20px]"
+              >
+                <div
+                  class="flex items-center justify-between text-[rgba(255,255,255,0.82)] text-[10px] pb-2"
+                >
+                  <span>MY PLAYLISTS · 我的歌单</span>
+                  <span class="text-[rgba(255,255,255,0.42)]">
+                    共 {{ userStore.playlists.length }} 个歌单
+                  </span>
+                </div>
+                <div class="grid grid-cols-4 gap-3">
+                  <div
+                    v-for="playlist in userStore.playlists"
+                    :key="playlist.id"
+                    class="playlist-card group cursor-pointer rounded-xl p-2 box-border transition-all duration-200"
+                    :class="{
+                      'playlist-card-loading': loadingPlaylistId === playlist.id
+                    }"
+                    :title="playlist.name"
+                    @click="onPlayPlaylist(playlist)"
+                  >
+                    <div
+                      class="relative w-full aspect-square rounded-lg overflow-hidden bg-[#1a1f29]"
+                    >
+                      <img
+                        v-if="playlist.coverImgUrl"
+                        :src="playlist.coverImgUrl"
+                        :alt="playlist.name"
+                        class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        loading="lazy"
+                      />
+                      <div
+                        v-else
+                        class="w-full h-full flex items-center justify-center"
+                      >
+                        <AudioLines color="rgba(255,255,255,0.3)" :size="22" />
+                      </div>
+                      <div
+                        class="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                      >
+                        <LoaderCircle
+                          v-if="loadingPlaylistId === playlist.id"
+                          color="white"
+                          :size="22"
+                          class="animate-spin"
+                        />
+                        <Play v-else color="white" :size="22" :fill="'white'" />
+                      </div>
+                    </div>
+                    <div class="text-white text-[12px] font-bold truncate mt-2">
+                      {{ playlist.name }}
+                    </div>
+                    <div
+                      class="text-[rgba(255,255,255,0.42)] text-[10px] truncate"
+                    >
+                      {{ playlist.trackCount }} 首
+                    </div>
+                  </div>
+                </div>
+              </div>
             </ScrollAreaViewport>
             <ScrollAreaScrollbar
               class="flex select-none touch-none p-0.5 z-20 transition-colors duration-160 ease-out hover:bg-blackA2 data-[orientation=vertical]:w-2.5 data-[orientation=horizontal]:flex-col data-[orientation=horizontal]:h-2.5"
@@ -236,12 +302,18 @@
             </ScrollAreaScrollbar>
           </ScrollAreaRoot>
         </div>
+        <NavMusic
+          ref="navMusicRef"
+          class="absolute -right-78"
+          :class="{
+            'right-5!': isNavTransition
+          }"
+        />
       </div>
       <!-- 播放器 -->
       <BottomBar
-        :order="currentData.order"
         @openImmersion="openImmersion"
-        @playOrder="playOrder"
+        @openMusicList="openMusicList"
       />
     </div>
   </div>
@@ -250,19 +322,36 @@
 <script setup lang="ts">
 import NavHeader from './header/index.vue'
 import BottomBar from './bottom-bar/index.vue'
-import { Minus, ChevronRight, AudioLines, ChartNoAxesColumn } from '@lucide/vue'
+import NavMusic from './nav-music/index.vue'
+import {
+  Minus,
+  ChevronRight,
+  AudioLines,
+  ChartNoAxesColumn,
+  Play,
+  LoaderCircle
+} from '@lucide/vue'
 import { commonlyUsedItem } from './util'
 import dayjs from 'dayjs'
-import createWindow from '@src/utils/createWindow'
+// import createWindow from '@src/utils/createWindow'
+import { useUserStore } from '@src/stores/user'
+import { usePlayerStore } from '@src/stores/player'
+import { getPlaylistSongs, type NeteasePlaylist } from '@src/utils/netease'
 
 let timer: any
 
+const userStore = useUserStore()
+const playerStore = usePlayerStore()
+
+const navMusicRef = useTemplateRef<InstanceType<typeof NavMusic>>('navMusicRef')
+
+const isNavTransition = ref<boolean>(false)
 const isImmersion = ref<boolean>(false)
+const loadingPlaylistId = ref<number | null>(null)
 
 const currentData = ref<Record<string, any>>({
   date: '',
-  time: '',
-  order: 'repeat'
+  time: ''
 })
 
 const updateCurrentTime = (): void => {
@@ -275,28 +364,43 @@ const openImmersion = (): void => {
   isImmersion.value = !isImmersion.value
 }
 
-const playOrder = (order: string): void => {
-  if (order === 'repeat') {
-    currentData.value.order = 'repeat1'
-  } else if (order === 'repeat1') {
-    currentData.value.order = 'shuffle'
-  } else if (order === 'shuffle') {
-    currentData.value.order = 'repeat'
+const onClick = (item: Record<string, any>): void => {
+  if (item.type === 'library') {
+    isNavTransition.value = true
   }
+  // createWindow.createWin({
+  //   label: 'settings',
+  //   title: '设置',
+  //   url: '/settings',
+  //   width: 400,
+  //   height: 600,
+  //   decorations: false,
+  //   transparent: true,
+  //   shadow: false
+  // })
 }
 
-const onClick = (item: Record<string, any>): void => {
-  console.log(item)
-  createWindow.createWin({
-    label: 'settings',
-    title: '设置',
-    url: '/settings',
-    width: 400,
-    height: 600,
-    decorations: false,
-    transparent: true,
-    shadow: false
-  })
+const openMusicList = (): void => {
+  isNavTransition.value = true
+  navMusicRef.value!.currentActive = 1
+}
+
+/** 点击歌单：加载歌曲并播放 */
+const onPlayPlaylist = async (playlist: NeteasePlaylist): Promise<void> => {
+  if (loadingPlaylistId.value !== null) return
+  loadingPlaylistId.value = playlist.id
+  try {
+    const songs = await getPlaylistSongs(playlist.id)
+    if (!songs.length) {
+      playerStore.error = `歌单「${playlist.name}」暂无可播放歌曲`
+      return
+    }
+    await playerStore.playPlaylist(songs, 0)
+  } catch (error) {
+    playerStore.error = error instanceof Error ? error.message : '加载歌单失败'
+  } finally {
+    loadingPlaylistId.value = null
+  }
 }
 
 onMounted(() => {

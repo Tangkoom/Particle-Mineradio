@@ -1,10 +1,11 @@
 import { defineStore } from 'pinia'
-import type { NeteaseProfile } from '@src/utils/netease'
+import type { NeteaseProfile, NeteasePlaylist } from '@src/utils/netease'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
     borderRadius: '15px' as string,
-    profile: null as NeteaseProfile | null
+    profile: null as NeteaseProfile | null,
+    playlists: [] as NeteasePlaylist[]
   }),
   getters: {
     isLoggedIn: (state): boolean => state.profile !== null
@@ -13,15 +14,20 @@ export const useUserStore = defineStore('user', {
     setProfile(profile: NeteaseProfile): void {
       this.profile = profile
     },
+    setPlaylists(playlists: NeteasePlaylist[]): void {
+      this.playlists = playlists
+    },
     clearProfile(): void {
       this.profile = null
+      this.playlists = []
     },
-    logout() {
+    logout(): void {
       this.profile = null
+      this.playlists = []
     }
   },
   persist: {
-    pick: ['profile'],
+    pick: ['profile', 'playlists'],
     storage: localStorage
   }
 })
