@@ -53,7 +53,19 @@
                 <Menu :size="16" color="rgba(255,226,225,.9)" />
               </div>
               <div class="flex items-center justify-center pl-2.75">
-                <span class="provider-logo">NE</span>
+                <div>
+                  <span
+                    v-if="!userStore.profile?.avatarUrl"
+                    class="provider-logo"
+                    >NE</span
+                  >
+                  <img
+                    v-else
+                    :src="userStore.profile?.avatarUrl"
+                    alt=""
+                    class="w-7.75 h-7.75 rounded-[10px]"
+                  />
+                </div>
                 <b class="text-white pl-2.75">网易云</b>
                 <small class="text-yellow-500 font-bold pl-2.75">VIP</small>
                 <SwitchRoot
@@ -427,6 +439,27 @@ const onSelectSong = (option: SongOption): void => {
   void playerStore.playSong(option.song)
 }
 
+// ============ 窗口控制 ============
+
+const minimize = async (): Promise<void> => {
+  await currentWindow.minimize()
+}
+
+const fullScreen = async (): Promise<void> => {
+  await currentWindow.toggleMaximize()
+  const isMaximized = await currentWindow.isMaximized()
+  if (isMaximized) userStore.borderRadius = '0px'
+  else userStore.borderRadius = '15px'
+  document.documentElement.style.setProperty(
+    '--app-border-radius',
+    userStore.borderRadius
+  )
+}
+
+const closeApp = async (): Promise<void> => {
+  await currentWindow.close()
+}
+
 // ============ 网易云登录 / 登出 ============
 
 /** 打开网易云登录窗口，登录成功后保存用户信息 */
@@ -465,27 +498,6 @@ onMounted(() => {
     })
   }
 })
-
-// ============ 窗口控制 ============
-
-const minimize = async (): Promise<void> => {
-  await currentWindow.minimize()
-}
-
-const fullScreen = async (): Promise<void> => {
-  await currentWindow.toggleMaximize()
-  const isMaximized = await currentWindow.isMaximized()
-  if (isMaximized) userStore.borderRadius = '0px'
-  else userStore.borderRadius = '15px'
-  document.documentElement.style.setProperty(
-    '--app-border-radius',
-    userStore.borderRadius
-  )
-}
-
-const closeApp = async (): Promise<void> => {
-  await currentWindow.close()
-}
 </script>
 
 <style scoped lang="scss">
