@@ -23,41 +23,51 @@
         </div>
       </div>
     </div>
-    <div class="w-full h-[calc(100%-92.5px)]">
+    <div class="w-full h-[calc(100%-92.5px)] relative overflow-hidden">
+      <MusicList
+        v-if="currentActive === 1"
+        :playlist="selectedPlaylist"
+        @at-bottom="(v) => (isAtBottom = v)"
+      />
+      <MyPlaylist
+        v-else-if="currentActive === 2"
+        @open-music-list="onOpenMusicList"
+        @at-bottom="(v) => (isAtBottom = v)"
+      />
       <div
-        v-for="item in musicList"
-        :key="item.id"
-        class="item mt-3.5 flex items-center gap-2.5 p-2 rounded-[10px] bg-[rgba(255,255,255,0.025)] border border-solid border-[rgba(255,255,255,0.04)] cursor-pointer transform transition-all duration-200"
-        @click="activeClick(item.value)"
-      >
-        <img src="" alt="" class="w-9.5 h-9.5 rounded-md" />
-        <div>
-          <div class="text-[12px] text-[rgba(255,255,255,0.9)] truncate">
-            {{ item.name }}
-          </div>
-          <div class="text-[10.5px] text-[rgba(255,255,255,0.4)]">
-            {{ item.artist }}
-          </div>
-        </div>
-      </div>
+        class="absolute bottom-0 z-10 w-full h-6 bg-linear-to-b from-transparent to-black transition-opacity duration-200 pointer-events-none"
+        :class="{ 'opacity-0': isAtBottom }"
+      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import MyPlaylist from './components/my-playlist.vue'
+import MusicList from './components/music-list.vue'
+import type { NeteasePlaylist } from '@src/utils/netease'
+
 const currentActive = ref<number>(1)
-const musicList = ref<Record<string, any>[]>([
-  { id: 1, name: '终会与你同行', artist: '白挺' },
-  { id: 2, name: '等不到你', artist: '汪苏泷' }
-])
 const tabList = ref<Record<string, any>[]>([
   { name: '当前队列', value: 1 },
   { name: '我的歌单', value: 2 },
   { name: '我的播客', value: 3 }
 ])
 
-const activeClick = (value: number): void => {
-  currentActive.value = value
+const selectedPlaylist = ref<NeteasePlaylist | null>(null)
+
+const isAtBottom = ref(false)
+
+const activeClick = (id: number): void => {
+  currentActive.value = id
+}
+
+/** 点击歌单条目：保存选中歌单并切换到音乐列表视图 */
+const onOpenMusicList = (playlist: NeteasePlaylist): void => {
+  selectedPlaylist.value = playlist
+  currentActive.value = 1
+  // 切换视图后回到顶部，避免沿用上一次滚动位置
+  isAtBottom.value = false
 }
 
 defineExpose({ currentActive })

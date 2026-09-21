@@ -448,13 +448,6 @@ const minimize = async (): Promise<void> => {
 
 const fullScreen = async (): Promise<void> => {
   await currentWindow.toggleMaximize()
-  const isMaximized = await currentWindow.isMaximized()
-  if (isMaximized) userStore.borderRadius = '0px'
-  else userStore.borderRadius = '15px'
-  document.documentElement.style.setProperty(
-    '--app-border-radius',
-    userStore.borderRadius
-  )
 }
 
 const closeApp = async (): Promise<void> => {

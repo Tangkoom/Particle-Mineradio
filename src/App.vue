@@ -1,4 +1,29 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { getCurrentWindow } from '@tauri-apps/api/window'
+
+const appWindow = getCurrentWindow()
+
+const updateBorderRadius = async (): Promise<void> => {
+  const isMaximized = await appWindow.isMaximized()
+  document.documentElement.style.setProperty(
+    '--app-border-radius',
+    isMaximized ? '0px' : '15px'
+  )
+}
+
+let unlisten: (() => void) | undefined
+
+onMounted(async () => {
+  await updateBorderRadius()
+  unlisten = await appWindow.onResized(() => {
+    void updateBorderRadius()
+  })
+})
+
+onUnmounted(() => {
+  unlisten?.()
+})
+</script>
 
 <template>
   <router-view />

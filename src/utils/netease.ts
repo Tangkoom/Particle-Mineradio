@@ -35,6 +35,7 @@ export interface NeteaseSong {
   artist: string
   album: string
   duration: number
+  coverUrl: string
 }
 
 /** 网易云歌单元信息 */
@@ -173,7 +174,8 @@ function normalizeSong(raw: any): NeteaseSong {
       .filter(Boolean)
       .join(' / '),
     album: raw.album?.name ?? raw.al?.name ?? '',
-    duration: raw.duration ?? raw.dt ?? 0
+    duration: raw.duration ?? raw.dt ?? 0,
+    coverUrl: toHttps(raw.album?.picUrl ?? raw.al?.picUrl ?? '')
   }
 }
 

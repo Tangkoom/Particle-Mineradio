@@ -367,17 +367,8 @@ const openImmersion = (): void => {
 const onClick = (item: Record<string, any>): void => {
   if (item.type === 'library') {
     isNavTransition.value = true
+    navMusicRef.value!.currentActive = 2
   }
-  // createWindow.createWin({
-  //   label: 'settings',
-  //   title: '设置',
-  //   url: '/settings',
-  //   width: 400,
-  //   height: 600,
-  //   decorations: false,
-  //   transparent: true,
-  //   shadow: false
-  // })
 }
 
 const openMusicList = (): void => {
