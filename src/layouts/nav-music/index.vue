@@ -27,6 +27,7 @@
       <MusicList
         v-if="currentActive === 1"
         :playlist="selectedPlaylist"
+        :songs="selectedSongs"
         @at-bottom="(v) => (isAtBottom = v)"
       />
       <MyPlaylist
@@ -45,7 +46,7 @@
 <script setup lang="ts">
 import MyPlaylist from './components/my-playlist.vue'
 import MusicList from './components/music-list.vue'
-import type { NeteasePlaylist } from '@src/utils/netease'
+import type { NeteasePlaylist, NeteaseSong } from '@src/utils/netease'
 
 const currentActive = ref<number>(1)
 const tabList = ref<Record<string, any>[]>([
@@ -55,6 +56,7 @@ const tabList = ref<Record<string, any>[]>([
 ])
 
 const selectedPlaylist = ref<NeteasePlaylist | null>(null)
+const selectedSongs = ref<NeteaseSong[] | null>(null)
 
 const isAtBottom = ref(false)
 
@@ -65,12 +67,21 @@ const activeClick = (id: number): void => {
 /** 点击歌单条目：保存选中歌单并切换到音乐列表视图 */
 const onOpenMusicList = (playlist: NeteasePlaylist): void => {
   selectedPlaylist.value = playlist
+  selectedSongs.value = null
   currentActive.value = 1
   // 切换视图后回到顶部，避免沿用上一次滚动位置
   isAtBottom.value = false
 }
 
-defineExpose({ currentActive })
+/** 直接传入歌曲数组（每日推荐/最近播放）并切换到音乐列表视图 */
+const openSongsView = (songs: NeteaseSong[]): void => {
+  selectedSongs.value = songs
+  selectedPlaylist.value = null
+  currentActive.value = 1
+  isAtBottom.value = false
+}
+
+defineExpose({ currentActive, openSongsView })
 </script>
 
 <style scoped lang="scss">

@@ -30,7 +30,7 @@
               {{ currentData.time }}
             </div>
             <div class="text-white text-[24px] font-bold mb-2">
-              “慢一点没关系，重要的是一直在向喜欢的生活靠近”
+              “{{ currentQuote }}”
             </div>
             <div class="flex items-center text-[12px] text-[#AFACAC] mb-4">
               <Minus color="white" :size="16" />
@@ -39,6 +39,7 @@
             <div class="flex items-center">
               <div
                 class="tag p-[4px_8px] text-[12px] text-[#AFACAC] border border-solid border-[#171717] rounded-2xl cursor-pointer mr-2"
+                @click="cycleQuote"
               >
                 换一条
               </div>
@@ -101,46 +102,58 @@
                   <div class="flex items-center justify-between mt-2">
                     <div class="flex-1 flex flex-col">
                       <span class="text-white text-[20px] font-bold">
-                        <a href="https://music.163.com/">0分钟</a>
+                        {{ todayStats.minutes }}分钟
                       </span>
                       <span class="text-[rgba(255,255,255,0.42)] text-[10px]">
                         聆听时长
                       </span>
                     </div>
                     <div class="flex-1 flex flex-col">
-                      <span class="text-white text-[20px] font-bold">2首</span>
+                      <span class="text-white text-[20px] font-bold">
+                        {{ todayStats.count }}首
+                      </span>
                       <span class="text-[rgba(255,255,255,0.42)] text-[10px]">
                         今日听歌
                       </span>
                     </div>
                     <div class="flex-1 flex flex-col">
-                      <span class="text-white text-[20px] font-bold"
-                        >蔡健雅</span
-                      >
+                      <span class="text-white text-[20px] font-bold truncate">
+                        {{ todayStats.topArtist }}
+                      </span>
                       <span class="text-[rgba(255,255,255,0.42)] text-[10px]">
-                        连续聆听1天
+                        最近常听
                       </span>
                     </div>
                   </div>
                 </div>
                 <div
-                  class="w-[calc(45%-16px)] ml-4 commonly-used rounded-2xl p-[12px_14px] flex items-center justify-between"
+                  class="w-[calc(45%-16px)] ml-4 commonly-used rounded-2xl p-[12px_14px] flex items-center justify-between cursor-pointer"
+                  :class="{ 'pointer-events-none opacity-50': !nextSong }"
+                  @click="onPlayNext"
                 >
-                  <div class="flex items-center h-full">
-                    <img src="" class="w-17 h-17 rounded-xl bg-[#ccc]" />
-                    <div class="flex flex-col h-full justify-between ml-2">
+                  <div class="flex items-center h-full min-w-0">
+                    <img
+                      :src="nextSong?.coverUrl || ''"
+                      :alt="nextSong?.name || ''"
+                      class="w-17 h-17 rounded-xl bg-[#ccc] object-cover shrink-0"
+                    />
+                    <div
+                      class="flex flex-col h-full justify-between ml-2 min-w-0"
+                    >
                       <div
                         class="text-[rgba(255,255,255,0.82)] text-[10px] pb-1.75"
                       >
                         NEXT UP · 接下来播放
                       </div>
                       <div
-                        class="text-[rgba(255,255,255,0.82)] text-[14px] pb-1.75"
+                        class="text-[rgba(255,255,255,0.82)] text-[14px] pb-1.75 truncate"
                       >
-                        情不自禁
+                        {{ nextSong?.name || '暂无下一首' }}
                       </div>
-                      <div class="text-[rgba(255,255,255,0.42)] text-[10px]">
-                        胡彦斌
+                      <div
+                        class="text-[rgba(255,255,255,0.42)] text-[10px] truncate"
+                      >
+                        {{ nextSong?.artist || '—' }}
                       </div>
                     </div>
                   </div>
@@ -153,7 +166,8 @@
               </div>
               <div class="w-full flex items-center mt-4">
                 <div
-                  class="w-full commonly-used rounded-2xl p-[12px_20px] flex items-center justify-between"
+                  class="w-full commonly-used rounded-2xl p-[12px_20px] flex items-center justify-between cursor-pointer"
+                  @click.stop="void onClickDaily"
                 >
                   <div>
                     <div class="text-[rgba(255,255,255,0.82)] text-[10px] pb-1">
@@ -170,7 +184,8 @@
               </div>
               <div class="w-full flex items-center mt-4">
                 <div
-                  class="w-[55%] commonly-used rounded-2xl p-[12px_20px] flex items-center justify-between"
+                  class="w-[55%] commonly-used rounded-2xl p-[12px_20px] flex items-center justify-between cursor-pointer"
+                  @click.stop="void onClickDaily"
                 >
                   <div
                     class="w-[calc(100%-84px)] flex flex-col justify-between h-full"
@@ -184,7 +199,7 @@
                     <div
                       class="text-[rgba(255,255,255,0.42)] text-[10px] truncate"
                     >
-                      打开平台推荐中心，没有可信推荐接口时会明确留空
+                      点击进入每日推荐，播放算法为你挑选的歌曲
                     </div>
                   </div>
                   <div class="flex items-center">
@@ -199,7 +214,8 @@
                   </div>
                 </div>
                 <div
-                  class="w-[calc(45%-16px)] ml-4 commonly-used rounded-2xl p-[12px_14px] flex items-center justify-between"
+                  class="w-[calc(45%-16px)] ml-4 commonly-used rounded-2xl p-[12px_14px] flex items-center justify-between cursor-pointer"
+                  @click.stop="onOpenLibrary"
                 >
                   <div
                     class="w-[calc(100%-84px)] flex flex-col justify-between h-full"
@@ -207,13 +223,11 @@
                     <div class="text-[rgba(255,255,255,0.82)] text-[10px] pb-1">
                       PLATFORM PICKS · 平台推荐
                     </div>
-                    <div class="text-white text-[18px] font-bold">
-                      推荐电台/歌单
-                    </div>
+                    <div class="text-white text-[18px] font-bold">我的歌单</div>
                     <div
                       class="text-[rgba(255,255,255,0.42)] text-[10px] truncate"
                     >
-                      读取每日歌曲、推荐歌单与推荐 Feed，不用关键词搜索
+                      打开歌单列表，点击封面直接整单播放
                     </div>
                   </div>
                   <div class="flex items-center">
@@ -224,69 +238,6 @@
                       class="ml-1 p-1 rounded-4xl common-transparent cursor-pointer box-border"
                     >
                       <ChevronRight color="white" :size="18" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <!-- 我的歌单 -->
-              <div
-                v-if="userStore.playlists.length"
-                class="w-full mt-4 commonly-used rounded-2xl p-[12px_20px]"
-              >
-                <div
-                  class="flex items-center justify-between text-[rgba(255,255,255,0.82)] text-[10px] pb-2"
-                >
-                  <span>MY PLAYLISTS · 我的歌单</span>
-                  <span class="text-[rgba(255,255,255,0.42)]">
-                    共 {{ userStore.playlists.length }} 个歌单
-                  </span>
-                </div>
-                <div class="grid grid-cols-4 gap-3">
-                  <div
-                    v-for="playlist in userStore.playlists"
-                    :key="playlist.id"
-                    class="playlist-card group cursor-pointer rounded-xl p-2 box-border transition-all duration-200"
-                    :class="{
-                      'playlist-card-loading': loadingPlaylistId === playlist.id
-                    }"
-                    :title="playlist.name"
-                    @click="onPlayPlaylist(playlist)"
-                  >
-                    <div
-                      class="relative w-full aspect-square rounded-lg overflow-hidden bg-[#1a1f29]"
-                    >
-                      <img
-                        v-if="playlist.coverImgUrl"
-                        :src="playlist.coverImgUrl"
-                        :alt="playlist.name"
-                        class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        loading="lazy"
-                      />
-                      <div
-                        v-else
-                        class="w-full h-full flex items-center justify-center"
-                      >
-                        <AudioLines color="rgba(255,255,255,0.3)" :size="22" />
-                      </div>
-                      <div
-                        class="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                      >
-                        <LoaderCircle
-                          v-if="loadingPlaylistId === playlist.id"
-                          color="white"
-                          :size="22"
-                          class="animate-spin"
-                        />
-                        <Play v-else color="white" :size="22" :fill="'white'" />
-                      </div>
-                    </div>
-                    <div class="text-white text-[12px] font-bold truncate mt-2">
-                      {{ playlist.name }}
-                    </div>
-                    <div
-                      class="text-[rgba(255,255,255,0.42)] text-[10px] truncate"
-                    >
-                      {{ playlist.trackCount }} 首
                     </div>
                   </div>
                 </div>
@@ -323,35 +274,58 @@
 import NavHeader from './header/index.vue'
 import BottomBar from './bottom-bar/index.vue'
 import NavMusic from './nav-music/index.vue'
-import {
-  Minus,
-  ChevronRight,
-  AudioLines,
-  ChartNoAxesColumn,
-  Play,
-  LoaderCircle
-} from '@lucide/vue'
+import { Minus, ChevronRight, AudioLines, ChartNoAxesColumn } from '@lucide/vue'
 import { commonlyUsedItem } from './util'
 import dayjs from 'dayjs'
-// import createWindow from '@src/utils/createWindow'
 import { useUserStore } from '@src/stores/user'
 import { usePlayerStore } from '@src/stores/player'
-import { getPlaylistSongs, type NeteasePlaylist } from '@src/utils/netease'
+import { getDailySongs, getRecentSongs } from '@src/utils/netease'
+// import createWindow from '@src/utils/createWindow'
 
 let timer: any
 
+const navMusicRef = useTemplateRef<InstanceType<typeof NavMusic>>('navMusicRef')
 const userStore = useUserStore()
 const playerStore = usePlayerStore()
 
-const navMusicRef = useTemplateRef<InstanceType<typeof NavMusic>>('navMusicRef')
-
 const isNavTransition = ref<boolean>(false)
 const isImmersion = ref<boolean>(false)
-const loadingPlaylistId = ref<number | null>(null)
 
 const currentData = ref<Record<string, any>>({
   date: '',
   time: ''
+})
+
+// 今日聆听数据
+const todayStats = ref<{ minutes: number; count: number; topArtist: string }>({
+  minutes: 0,
+  count: 0,
+  topArtist: '—'
+})
+
+// 每日热评文案池，点「换一条」循环切换
+const dailyQuotes = [
+  '慢一点没关系，重要的是一直在向喜欢的生活靠近',
+  '把今天过好，比想一万次未来都管用',
+  '你只管努力，剩下的交给时间',
+  '别慌，月亮也正在慢慢变圆',
+  '山高水长，怕什么来不及',
+  '把热爱做到极致，才不会被生活淹没',
+  '慢慢来，谁不是翻山越岭去相爱',
+  '生活不会亏待每一个努力向上的人'
+]
+const quoteIndex = ref(Math.floor(Math.random() * dailyQuotes.length))
+const currentQuote = computed(() => dailyQuotes[quoteIndex.value])
+const cycleQuote = (): void => {
+  quoteIndex.value = (quoteIndex.value + 1) % dailyQuotes.length
+}
+
+// 下一首：取播放队列 queueIndex+1，循环回 0
+const nextSong = computed(() => {
+  const q = playerStore.queue
+  const i = playerStore.queueIndex
+  if (!q.length || i < 0) return null
+  return q[(i + 1) % q.length]
 })
 
 const updateCurrentTime = (): void => {
@@ -364,11 +338,103 @@ const openImmersion = (): void => {
   isImmersion.value = !isImmersion.value
 }
 
+/** 拉取最近播放，计算今日聆听时长 / 听歌数 / 最常听的艺人 */
+const loadTodayStats = async (): Promise<void> => {
+  const profile = userStore.profile
+  if (!profile) return
+  try {
+    const songs = await getRecentSongs(profile.userId)
+    const totalMs = songs.reduce((sum, s) => sum + (s.duration || 0), 0)
+    const minutes = Math.round(totalMs / 60000)
+    // 统计出现频次最高的艺人
+    const artistCount = new Map<string, number>()
+    for (const s of songs) {
+      if (!s.artist) continue
+      for (const name of s.artist.split(' / ')) {
+        const k = name.trim()
+        if (!k) continue
+        artistCount.set(k, (artistCount.get(k) ?? 0) + 1)
+      }
+    }
+    let topArtist = '—'
+    let max = 0
+    for (const [name, c] of artistCount) {
+      if (c > max) {
+        max = c
+        topArtist = name
+      }
+    }
+    todayStats.value = { minutes, count: songs.length, topArtist }
+  } catch (error) {
+    console.log('加载今日聆听数据失败', error)
+  }
+}
+
+/** 点击每日推荐：拉取每日推荐歌曲、播放、并把音乐列表换成每日推荐 */
+const onClickDaily = async (): Promise<void> => {
+  if (!userStore.isLoggedIn) return
+  try {
+    const songs = await getDailySongs()
+    if (!songs.length) {
+      playerStore.error = '暂无每日推荐歌曲'
+      return
+    }
+    await playerStore.playPlaylist(songs, 0)
+    isNavTransition.value = true
+    navMusicRef.value?.openSongsView(songs)
+  } catch (error) {
+    playerStore.error =
+      error instanceof Error ? error.message : '获取每日推荐失败'
+  }
+}
+
+/** 点击最近播放：拉取最近播放歌曲、播放、并把音乐列表换成最近播放 */
+const onClickRecent = async (): Promise<void> => {
+  const profile = userStore.profile
+  if (!profile) return
+  try {
+    const songs = await getRecentSongs(profile.userId)
+    if (!songs.length) {
+      playerStore.error = '暂无最近播放记录'
+      return
+    }
+    await playerStore.playPlaylist(songs, 0)
+    isNavTransition.value = true
+    navMusicRef.value?.openSongsView(songs)
+  } catch (error) {
+    playerStore.error =
+      error instanceof Error ? error.message : '获取最近播放失败'
+  }
+}
+
 const onClick = (item: Record<string, any>): void => {
   if (item.type === 'library') {
-    isNavTransition.value = true
-    navMusicRef.value!.currentActive = 2
+    onOpenLibrary()
+  } else if (item.type === 'daily') {
+    void onClickDaily()
+  } else if (item.type === 'recent') {
+    void onClickRecent()
+  } else if (item.type === 'play') {
+    onOpenCurrentQueue()
   }
+}
+
+/** 打开「我的歌单」侧栏 */
+const onOpenLibrary = (): void => {
+  isNavTransition.value = true
+  navMusicRef.value!.currentActive = 2
+}
+
+/** 打开「当前队列」侧栏 */
+const onOpenCurrentQueue = (): void => {
+  isNavTransition.value = true
+  navMusicRef.value!.currentActive = 1
+}
+
+/** 点击 NEXT UP 卡片：播放下一首 */
+const onPlayNext = (): void => {
+  if (!playerStore.queue.length) return
+  void playerStore.playNext()
 }
 
 const openMusicList = (): void => {
@@ -376,27 +442,10 @@ const openMusicList = (): void => {
   navMusicRef.value!.currentActive = 1
 }
 
-/** 点击歌单：加载歌曲并播放 */
-const onPlayPlaylist = async (playlist: NeteasePlaylist): Promise<void> => {
-  if (loadingPlaylistId.value !== null) return
-  loadingPlaylistId.value = playlist.id
-  try {
-    const songs = await getPlaylistSongs(playlist.id)
-    if (!songs.length) {
-      playerStore.error = `歌单「${playlist.name}」暂无可播放歌曲`
-      return
-    }
-    await playerStore.playPlaylist(songs, 0)
-  } catch (error) {
-    playerStore.error = error instanceof Error ? error.message : '加载歌单失败'
-  } finally {
-    loadingPlaylistId.value = null
-  }
-}
-
 onMounted(() => {
   updateCurrentTime()
   timer = setInterval(updateCurrentTime)
+  if (userStore.isLoggedIn) void loadTodayStats()
 })
 
 onUnmounted(() => {

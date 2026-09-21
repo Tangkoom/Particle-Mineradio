@@ -456,6 +456,44 @@ export async function getPlaylistSongs(
   return getSongDetails(ids)
 }
 
+/** 获取每日推荐歌曲 */
+export async function getDailySongs(): Promise<NeteaseSong[]> {
+  await ensureBridge()
+  const data: any = await requestFromWindow(
+    BRIDGE_LABEL,
+    'GET',
+    '/api/v3/discovery/recommend/songs'
+  )
+  if (data?.code !== 200) {
+    throw new Error(data?.msg || '获取每日推荐失败')
+  }
+  const songs: any[] = data?.data?.dailySongs ?? data?.data?.songs ?? []
+  return songs.map(normalizeSong).filter((s) => s.id)
+}
+
+/** 获取最近播放歌曲（去重，按播放时间倒序） */
+export async function getRecentSongs(uid: number): Promise<NeteaseSong[]> {
+  await ensureBridge()
+  const data: any = await requestFromWindow(
+    BRIDGE_LABEL,
+    'GET',
+    `/api/v1/play/record?uid=${uid}&type=0`
+  )
+  if (data?.code !== 200) {
+    throw new Error(data?.msg || '获取最近播放失败')
+  }
+  const all: any[] = data?.allData ?? data?.weekData ?? []
+  const seen = new Set<number>()
+  const result: NeteaseSong[] = []
+  for (const r of all) {
+    const song = r?.song
+    if (!song?.id || seen.has(song.id)) continue
+    seen.add(song.id)
+    result.push(normalizeSong(song))
+  }
+  return result
+}
+
 /** 退出登录：关闭桥接 / 登录窗口并清空 WebView2 浏览数据（含 HttpOnly MUSIC_U） */
 export async function logoutNetease(): Promise<void> {
   bridgePromise = null

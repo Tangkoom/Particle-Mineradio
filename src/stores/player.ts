@@ -24,13 +24,18 @@ export const usePlayerStore = defineStore('player', {
     error: '',
     queue: [] as NeteaseSong[],
     queueIndex: -1,
-    playOrder: 'repeat' as PlayOrder
+    playOrder: 'repeat' as PlayOrder,
+    volume: 100,
+    muted: false,
+    lastVolume: 100
   }),
   actions: {
     ensureAudio(): HTMLAudioElement {
       if (audio) return audio
       audio = new Audio()
       audio.preload = 'auto'
+      audio.volume = this.volume / 100
+      audio.muted = this.muted
       audio.addEventListener('play', () => {
         this.isPlaying = true
       })
@@ -91,10 +96,7 @@ export const usePlayerStore = defineStore('player', {
     },
 
     /** 播放整个歌单：设置队列并从指定索引开始 */
-    async playPlaylist(
-      songs: NeteaseSong[],
-      startIndex = 0
-    ): Promise<void> {
+    async playPlaylist(songs: NeteaseSong[], startIndex = 0): Promise<void> {
       if (!songs.length) {
         this.error = '歌单暂无可播放歌曲'
         return
@@ -148,6 +150,48 @@ export const usePlayerStore = defineStore('player', {
       }
     },
 
+    /** 设置音量 0-100，0 时自动静音，>0 时取消静音 */
+    setVolume(v: number): void {
+      const next = Math.max(0, Math.min(100, Math.round(v)))
+      this.volume = next
+      if (next > 0) {
+        this.lastVolume = next
+        this.muted = false
+      } else {
+        this.muted = true
+      }
+      const el = audio
+      if (el) {
+        el.volume = next / 100
+        el.muted = this.muted
+      }
+    },
+
+    /** 切换静音；从静音恢复时回到 lastVolume */
+    toggleMute(): void {
+      if (this.muted || this.volume === 0) {
+        this.muted = false
+        const restore = this.lastVolume > 0 ? this.lastVolume : 100
+        this.volume = restore
+      } else {
+        this.muted = true
+      }
+      const el = audio
+      if (el) {
+        el.volume = this.volume / 100
+        el.muted = this.muted
+      }
+    },
+
+    /** 跳转到指定时间（秒） */
+    seek(time: number): void {
+      const el = audio
+      if (!el || !Number.isFinite(el.duration)) return
+      const next = Math.max(0, Math.min(el.duration, time))
+      el.currentTime = next
+      this.currentTime = next
+    },
+
     stop(): void {
       if (audio) {
         audio.pause()
@@ -162,5 +206,9 @@ export const usePlayerStore = defineStore('player', {
       this.queue = []
       this.queueIndex = -1
     }
+  },
+  persist: {
+    pick: ['volume', 'muted', 'lastVolume', 'playOrder'],
+    storage: localStorage
   }
 })

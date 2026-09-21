@@ -82,6 +82,7 @@ import {
 
 const props = defineProps<{
   playlist: NeteasePlaylist | null
+  songs: NeteaseSong[] | null
 }>()
 
 const emits = defineEmits<{
@@ -159,10 +160,17 @@ const onScroll = (): void => {
   rafId = requestAnimationFrame(applyScroll)
 }
 
-const loadSongs = async (playlist: NeteasePlaylist): Promise<void> => {
+const loadSongs = async (): Promise<void> => {
   loading.value = true
   try {
-    musicList.value = await getPlaylistSongs(playlist.id)
+    // 优先使用直接传入的歌曲数组（每日推荐/最近播放），否则按歌单拉取
+    if (props.songs && props.songs.length) {
+      musicList.value = props.songs
+    } else if (props.playlist) {
+      musicList.value = await getPlaylistSongs(props.playlist.id)
+    } else {
+      musicList.value = []
+    }
     renderStart.value = 0
     if (scrollRef.value) scrollRef.value.scrollTop = 0
     await nextTick()
@@ -182,10 +190,9 @@ const onPlaySong = (index: number): void => {
 }
 
 watch(
-  () => props.playlist,
-  (val) => {
-    if (val) void loadSongs(val)
-    else musicList.value = []
+  () => [props.playlist, props.songs],
+  () => {
+    void loadSongs()
   },
   { immediate: true }
 )
