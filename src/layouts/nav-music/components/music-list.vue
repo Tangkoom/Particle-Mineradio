@@ -20,39 +20,51 @@
   >
     <!-- 撑起总高度，让滚动条反映真实列表长度 -->
     <div :style="{ height: `${totalHeight}px`, position: 'relative' }">
+      <!-- 渲染窗口：所有可见项放在这个容器里，整体 translateY 平移，
+           避免给每个 item 单独改 top 触发几十次 layout -->
       <div
-        v-for="entry in visibleEntries"
-        :key="entry.item.id"
         :style="{
+          transform: windowTransform,
           position: 'absolute',
-          top: `${entry.top}px`,
-          width: '100%'
+          top: 0,
+          left: 0,
+          right: 0,
+          willChange: 'transform'
         }"
-        class="item mt-3.5 flex items-center gap-2.5 p-2 rounded-[10px] bg-[rgba(255,255,255,0.025)] border border-solid border-[rgba(255,255,255,0.04)] cursor-pointer transform transition-all duration-200"
-        :class="{
-          'bg-[rgba(255,255,255,0.2)]! border-[rgba(255,255,255,0.4)]!':
-            playerStore.current?.id === entry.item.id
-        }"
-        @click="onPlaySong(entry.index)"
       >
-        <img
-          :src="entry.item.coverUrl"
-          :alt="entry.item.name"
-          class="w-9.5 h-9.5 rounded-md object-cover bg-[rgba(255,255,255,0.05)]"
-          loading="lazy"
-        />
-        <div class="min-w-0 flex-1">
-          <div class="text-[12px] text-[rgba(255,255,255,0.9)] truncate">
-            {{ entry.item.name }}
-          </div>
-          <div class="text-[10.5px] text-[rgba(255,255,255,0.4)] truncate">
-            {{ entry.item.artist }}
-          </div>
-        </div>
         <div
-          class="text-[10px] text-[rgba(255,255,255,0.35)] tabular-nums pr-1"
+          v-for="entry in visibleEntries"
+          :key="entry.id"
+          :style="{
+            height: `${ITEM_CONTENT}px`,
+            marginBottom: `${GAP}px`
+          }"
+          class="item mt-3.5 flex items-center gap-2.5 p-2 rounded-[10px] bg-[rgba(255,255,255,0.025)] border border-solid border-[rgba(255,255,255,0.04)] cursor-pointer transform transition-all duration-200"
+          :class="{
+            'bg-[rgba(255,255,255,0.2)]! border-[rgba(255,255,255,0.4)]!':
+              playerStore.current?.id === entry.id
+          }"
+          @click="onPlaySong(entry._index)"
         >
-          {{ formatPlayTime(entry.item.duration / 1000) }}
+          <img
+            :src="entry.coverUrl"
+            :alt="entry.name"
+            class="w-9.5 h-9.5 rounded-md object-cover bg-[rgba(255,255,255,0.05)]"
+            loading="lazy"
+          />
+          <div class="min-w-0 flex-1">
+            <div class="text-[12px] text-[rgba(255,255,255,0.9)] truncate">
+              {{ entry.name }}
+            </div>
+            <div class="text-[10.5px] text-[rgba(255,255,255,0.4)] truncate">
+              {{ entry.artist }}
+            </div>
+          </div>
+          <div
+            class="text-[10px] text-[rgba(255,255,255,0.35)] tabular-nums pr-1"
+          >
+            {{ formatPlayTime(entry.duration / 1000) }}
+          </div>
         </div>
       </div>
     </div>
@@ -81,56 +93,80 @@ const playerStore = usePlayerStore()
 const musicList = ref<NeteaseSong[]>([])
 const loading = ref(false)
 
-/** 单项总步进 = 自然高度 56 + 间距 14；不设固定 height，让背景只覆盖内容本身 */
-const ITEM_HEIGHT = 70
-/** 上下额外渲染的缓冲项数，避免快速滚动出现空白 */
-const BUFFER = 4
+/** 每项内容高度：img 38 + padding 16 + border 2 */
+const ITEM_CONTENT = 56
+/** 项与项之间的间距 */
+const GAP = 14
+/** 单项总步进 = 内容 + 间距，用于 spacer 高度与 translateY 计算 */
+const ITEM_HEIGHT = ITEM_CONTENT + GAP
+/** 上下额外渲染的缓冲项数，覆盖快速滚动一帧的位移 */
+const BUFFER = 6
 
 const scrollRef = ref<HTMLElement | null>(null)
-const startIndex = ref(0)
-const visibleCount = ref(20)
+const renderStart = ref(0)
+const renderCount = ref(20)
 
 const totalHeight = computed(() => musicList.value.length * ITEM_HEIGHT)
 
-interface VisibleEntry {
-  item: NeteaseSong
-  index: number
-  top: number
+const windowTransform = computed(
+  () => `translateY(${renderStart.value * ITEM_HEIGHT}px)`
+)
+
+interface RenderEntry extends NeteaseSong {
+  _index: number
 }
 
-const visibleEntries = computed<VisibleEntry[]>(() => {
-  const start = Math.max(0, startIndex.value - BUFFER)
-  const end = Math.min(
-    musicList.value.length,
-    startIndex.value + visibleCount.value + BUFFER
-  )
-  const entries: VisibleEntry[] = []
+const visibleEntries = computed<RenderEntry[]>(() => {
+  const start = renderStart.value
+  const end = Math.min(musicList.value.length, start + renderCount.value)
+  const arr: RenderEntry[] = []
   for (let i = start; i < end; i++) {
-    entries.push({
-      item: musicList.value[i],
-      index: i,
-      top: i * ITEM_HEIGHT
-    })
+    const song = musicList.value[i]
+    if (!song) continue
+    arr.push({ ...song, _index: i })
   }
-  return entries
+  return arr
 })
 
-const onScroll = (): void => {
+let rafId: number | null = null
+
+const applyScroll = (): void => {
+  rafId = null
   const el = scrollRef.value
   if (!el) return
-  startIndex.value = Math.floor(el.scrollTop / ITEM_HEIGHT)
-  visibleCount.value = Math.max(1, Math.ceil(el.clientHeight / ITEM_HEIGHT))
+  const visible = Math.max(1, Math.ceil(el.clientHeight / ITEM_HEIGHT))
+  // 期望渲染窗口起点：让可视区位于窗口中部，上下都有缓冲
+  const desiredStart = Math.max(
+    0,
+    Math.floor(el.scrollTop / ITEM_HEIGHT) - BUFFER
+  )
+  const desiredCount = visible + BUFFER * 2
+  // 仅在区间变化时更新 renderStart/renderCount，
+  // 否则 Vue patch 会重复触发不必要的 vnode diff
+  if (
+    desiredStart !== renderStart.value ||
+    desiredCount !== renderCount.value
+  ) {
+    renderStart.value = desiredStart
+    renderCount.value = desiredCount
+  }
   emits('at-bottom', el.scrollTop + el.clientHeight >= el.scrollHeight - 1)
+}
+
+const onScroll = (): void => {
+  // rAF 节流：一帧内多次 scroll 事件只跑一次重算
+  if (rafId !== null) return
+  rafId = requestAnimationFrame(applyScroll)
 }
 
 const loadSongs = async (playlist: NeteasePlaylist): Promise<void> => {
   loading.value = true
   try {
     musicList.value = await getPlaylistSongs(playlist.id)
-    startIndex.value = 0
+    renderStart.value = 0
     if (scrollRef.value) scrollRef.value.scrollTop = 0
     await nextTick()
-    onScroll()
+    applyScroll()
   } catch (error) {
     musicList.value = []
     playerStore.error = error instanceof Error ? error.message : '加载歌单失败'
@@ -155,23 +191,17 @@ watch(
 )
 
 onMounted(() => {
-  onScroll()
+  applyScroll()
+})
+
+onBeforeUnmount(() => {
+  if (rafId !== null) cancelAnimationFrame(rafId)
 })
 
 defineExpose({ scrollRef })
 </script>
 
 <style scoped lang="scss">
-.music-list-scroll {
-  &::-webkit-scrollbar {
-    width: 0;
-    height: 0;
-    display: none;
-  }
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
 .item {
   &:hover {
     background: rgba(255, 255, 255, 0.05);

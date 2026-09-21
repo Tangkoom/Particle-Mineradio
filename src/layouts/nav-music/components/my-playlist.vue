@@ -8,15 +8,45 @@
       v-for="item in useStore.playlists"
       :key="item.id"
       class="item mt-3.5 flex items-center gap-2.5 p-2 rounded-[10px] bg-[rgba(255,255,255,0.025)] border border-solid border-[rgba(255,255,255,0.04)] cursor-pointer transform transition-all duration-200"
-      @click="openMusicList(item)"
+      @click.stop="openMusicList(item)"
     >
-      <img
-        :src="item.coverImgUrl"
-        alt=""
-        class="w-9.5 h-9.5 rounded-md object-cover transition-transform duration-300 group-hover:scale-105"
-        loading="lazy"
+      <div
+        class="playlist-card group cursor-pointer rounded-xl box-border transition-all duration-200"
+        :class="{
+          'playlist-card-loading': loadingPlaylistId === item.id
+        }"
+        :title="item.name"
         @click.stop="onPlayPlaylist(item)"
-      />
+      >
+        <div
+          class="relative w-9.5 h-9.5 aspect-square rounded-md overflow-hidden bg-[#1a1f29]"
+        >
+          <img
+            v-if="item.coverImgUrl"
+            :src="item.coverImgUrl"
+            alt=""
+            :class="{
+              'playlist-card-loading': loadingPlaylistId === item.id
+            }"
+            class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            loading="lazy"
+          />
+          <div v-else class="w-full h-full flex items-center justify-center">
+            <AudioLines color="rgba(255,255,255,0.3)" :size="22" />
+          </div>
+          <div
+            class="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          >
+            <LoaderCircle
+              v-if="loadingPlaylistId === item.id"
+              color="white"
+              :size="22"
+              class="animate-spin"
+            />
+            <Play v-else color="white" :size="22" :fill="'white'" />
+          </div>
+        </div>
+      </div>
       <div>
         <div class="text-[12px] text-[rgba(255,255,255,0.9)] truncate">
           {{ item.name }}
@@ -33,6 +63,7 @@
 import { useUserStore } from '@src/stores/user'
 import { usePlayerStore } from '@src/stores/player'
 import { getPlaylistSongs, type NeteasePlaylist } from '@src/utils/netease'
+import { AudioLines, Play, LoaderCircle } from '@lucide/vue'
 
 const emits = defineEmits<{
   (e: 'open-music-list', playlist: NeteasePlaylist): void
@@ -80,16 +111,6 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-.music-list-scroll {
-  &::-webkit-scrollbar {
-    width: 0;
-    height: 0;
-    display: none;
-  }
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
 .item {
   &:hover {
     background: rgba(255, 255, 255, 0.05);
