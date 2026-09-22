@@ -5,7 +5,9 @@
     @click.stop
   >
     <div class="playlist-panel-sticky rounded-2xl p-[8px_12px]">
-      <div class="font-bold text-white text-[14px]">歌单 / 列表</div>
+      <div class="flex items-center font-bold text-white text-[14px]">
+        歌单 / 列表
+      </div>
       <div class="text-[10px] text-[rgba(255,255,255,.32)] mt-1">
         QUEUE · 鼠标点击其他地方自动隐藏
       </div>
@@ -46,7 +48,7 @@
 <script setup lang="ts">
 import MyPlaylist from './components/my-playlist.vue'
 import MusicList from './components/music-list.vue'
-import type { NeteasePlaylist, NeteaseSong } from '@src/utils/netease'
+import { type NeteasePlaylist, type NeteaseSong } from '@src/utils/netease'
 
 const currentActive = ref<number>(1)
 const tabList = ref<Record<string, any>[]>([
@@ -58,7 +60,7 @@ const tabList = ref<Record<string, any>[]>([
 const selectedPlaylist = ref<NeteasePlaylist | null>(null)
 const selectedSongs = ref<NeteaseSong[] | null>(null)
 
-const isAtBottom = ref(false)
+const isAtBottom = ref<boolean>(false)
 
 const activeClick = (id: number): void => {
   currentActive.value = id

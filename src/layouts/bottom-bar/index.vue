@@ -4,7 +4,7 @@
       id="common-transparent"
       class="relative border border-solid border-[#171717] shadow-lg rounded-4xl p-[8px_15px] flex items-center justify-between overflow-visible"
     >
-      <div class="w-45 flex items-center">
+      <div class="w-60 flex items-center">
         <!-- 圆环进度 + 居中旋转封面：点击圆环按角度跳转 -->
         <div
           class="relative w-12 h-12 flex items-center justify-center shrink-0"
@@ -109,7 +109,32 @@
           <ListMusic color="white" :size="18" @click.stop="openMusicList" />
         </div>
       </div>
-      <div class="flex items-center justify-between w-45">
+      <div class="flex items-center justify-between w-60">
+        <div
+          @click.stop="toggleQualityMenu"
+          class="relative text-white text-[14px] font-500 cursor-pointer p-1 rounded-lg common-transparent"
+          :class="{ 'bg-white/10': showQualityMenu }"
+        >
+          {{ currentQualityLabel }}
+          <Transition name="quality-menu">
+            <div
+              v-if="showQualityMenu"
+              class="absolute bottom-full mb-2 right-0 w-52 rounded-xl border border-white/10 bg-[rgba(12,14,18,0.94)] backdrop-blur-xl shadow-2xl z-50 p-1"
+              @click.stop
+            >
+              <div
+                v-for="opt in qualityOptions"
+                :key="opt.value"
+                class="flex items-center justify-between px-2.5 py-1.5 rounded-lg cursor-pointer text-white text-[12px] hover:bg-white/8 transition"
+                :class="{ 'bg-white/12': playerStore.quality === opt.value }"
+                @click.stop="onSelectQuality(opt.value)"
+              >
+                <span class="font-500">{{ opt.label }}</span>
+                <span class="text-[10px] text-white/40">{{ opt.desc }}</span>
+              </div>
+            </div>
+          </Transition>
+        </div>
         <div
           class="text-white text-[14px] font-500 cursor-pointer p-1 rounded-lg common-transparent"
           :class="{ 'text-[rgba(255,255,255,0.4)]!': !lyricsActive }"
@@ -119,7 +144,7 @@
         </div>
         <!-- 音量：图标点击静音，hover 出垂直滑条 -->
         <div
-          class="relative cursor-pointer p-1 rounded-lg common-transparent volume-wrap"
+          class="group relative cursor-pointer p-1 rounded-lg common-transparent"
           @wheel.prevent="onVolumeWheel"
         >
           <component
@@ -128,10 +153,15 @@
             :size="18"
             @click="playerStore.toggleMute()"
           />
-          <div class="volume-popover">
-            <div class="volume-track" @click.stop>
+          <div
+            class="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 scale-[0.92] origin-bottom flex flex-col items-center gap-1.5 pt-2.5 px-2 pb-2 rounded-xl bg-[rgba(12,14,18,0.94)] border border-[rgba(255,255,255,0.08)] shadow-[0_12px_32px_rgba(0,0,0,0.45)] backdrop-blur-[20px] backdrop-saturate-[1.4] opacity-0 pointer-events-none transition duration-180 ease z-30 group-hover:scale-100 group-hover:opacity-100 group-hover:pointer-events-auto"
+          >
+            <div
+              class="relative w-1.5 h-20 rounded bg-[rgba(255,255,255,0.12)] overflow-hidden"
+              @click.stop
+            >
               <div
-                class="volume-fill"
+                class="absolute inset-x-0 bottom-0 rounded bg-linear-to-b from-white to-[rgba(255,255,255,0.7)] transition-[height] duration-80 ease"
                 :style="{ height: `${effectiveVolume}%` }"
               />
               <input
@@ -140,7 +170,7 @@
                 max="100"
                 step="1"
                 :value="effectiveVolume"
-                class="volume-range"
+                class="absolute inset-0 w-full h-full m-0 p-0 opacity-0 cursor-pointer [writing-mode:vertical-lr] [direction:rtl]"
                 @input="onVolumeInput"
               />
             </div>
@@ -184,16 +214,42 @@ import {
 } from '@lucide/vue'
 import { usePlayerStore, formatPlayTime } from '@src/stores/player'
 import { markRaw } from 'vue'
+import {
+  NETEASE_QUALITY_OPTIONS,
+  type NeteaseQuality
+} from '@src/utils/netease'
 
 const emits = defineEmits(['openImmersion', 'openMusicList', 'openLyrics'])
 
 const playerStore = usePlayerStore()
 
 /** 歌词面板开关：父级通过 openLyrics 事件控制显示 */
-const lyricsActive = ref(false)
+const lyricsActive = ref<boolean>(false)
+const showQualityMenu = ref<boolean>(false)
+
+const qualityOptions = NETEASE_QUALITY_OPTIONS
+const currentQualityLabel = computed(
+  () =>
+    qualityOptions.find((o) => o.value === playerStore.quality)?.label ?? '极高'
+)
+
 const toggleLyrics = (): void => {
   lyricsActive.value = !lyricsActive.value
   emits('openLyrics', lyricsActive.value)
+}
+
+const toggleQualityMenu = (): void => {
+  showQualityMenu.value = !showQualityMenu.value
+}
+
+const onSelectQuality = (q: NeteaseQuality): void => {
+  playerStore.setQuality(q)
+  showQualityMenu.value = false
+}
+
+/** 点击 bottom-bar 外部时关闭下拉：bottom-bar 容器内的事件不会冒泡到 document */
+const onDocClick = (): void => {
+  showQualityMenu.value = false
 }
 
 /** 实际生效的音量：静音时按 0 处理 */
@@ -253,76 +309,12 @@ const openImmersion = (): void => {
 const openMusicList = (): void => {
   emits('openMusicList')
 }
+
+onMounted(() => document.addEventListener('click', onDocClick))
+onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
 </script>
 
 <style scoped lang="scss">
-.volume-wrap {
-  position: relative;
-
-  .volume-popover {
-    position: absolute;
-    bottom: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%) scale(0.92);
-    transform-origin: bottom center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    padding: 10px 8px 8px;
-    border-radius: 12px;
-    background: rgba(12, 14, 18, 0.94);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
-    backdrop-filter: blur(20px) saturate(1.4);
-    opacity: 0;
-    pointer-events: none;
-    transition:
-      opacity 0.18s ease,
-      transform 0.18s ease;
-    z-index: 30;
-  }
-
-  &:hover .volume-popover {
-    transform: translateX(-50%) scale(1);
-    opacity: 1;
-    pointer-events: auto;
-  }
-}
-
-.volume-track {
-  position: relative;
-  width: 6px;
-  height: 80px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.12);
-  overflow: hidden;
-}
-
-.volume-fill {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(180deg, #fff, rgba(255, 255, 255, 0.7));
-  border-radius: 4px;
-  transition: height 0.08s ease;
-}
-
-.volume-range {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  opacity: 0;
-  cursor: pointer;
-  /* 旋转滑条为垂直方向 */
-  writing-mode: vertical-lr;
-  direction: rtl;
-}
-
 .cover-ring {
   /* hover 时圆环增粗，方便点击 */
   &:hover circle {
@@ -353,5 +345,18 @@ const openMusicList = (): void => {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* 音质下拉框进出动画 */
+.quality-menu-enter-active,
+.quality-menu-leave-active {
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+.quality-menu-enter-from,
+.quality-menu-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
 }
 </style>

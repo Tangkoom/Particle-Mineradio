@@ -400,40 +400,6 @@ const onBlur = (): void => {
   }, 160)
 }
 
-watch(keyword, (value) => {
-  if (searchTimer) clearTimeout(searchTimer)
-  if (justSelected) {
-    justSelected = false
-    return
-  }
-  const kw = value.trim()
-  if (!kw || !userStore.isLoggedIn) {
-    options.value = []
-    return
-  }
-  const seq = ++searchSeq
-  searchTimer = setTimeout(async () => {
-    try {
-      const songs = await searchSongs(kw)
-      if (seq !== searchSeq) return
-      options.value = songs.length
-        ? [
-            {
-              name: '单曲',
-              children: songs.map((song) => ({
-                name: `${song.name} - ${song.artist}`,
-                song
-              }))
-            }
-          ]
-        : []
-    } catch (error) {
-      if (seq === searchSeq) options.value = []
-      console.log('搜索失败', error)
-    }
-  }, 350)
-})
-
 /** 选中搜索结果 => 播放 */
 const onSelectSong = (option: SongOption): void => {
   justSelected = true
@@ -491,6 +457,40 @@ const handleLogout = async (): Promise<void> => {
     console.log('清除网易云登录态失败', error)
   }
 }
+
+watch(keyword, (value) => {
+  if (searchTimer) clearTimeout(searchTimer)
+  if (justSelected) {
+    justSelected = false
+    return
+  }
+  const kw = value.trim()
+  if (!kw || !userStore.isLoggedIn) {
+    options.value = []
+    return
+  }
+  const seq = ++searchSeq
+  searchTimer = setTimeout(async () => {
+    try {
+      const songs = await searchSongs(kw)
+      if (seq !== searchSeq) return
+      options.value = songs.length
+        ? [
+            {
+              name: '单曲',
+              children: songs.map((song) => ({
+                name: `${song.name} - ${song.artist}`,
+                song
+              }))
+            }
+          ]
+        : []
+    } catch (error) {
+      if (seq === searchSeq) options.value = []
+      console.log('搜索失败', error)
+    }
+  }, 350)
+})
 
 // 启动时若本地保留过登录资料，校验隐藏桥接窗口中的 Cookie 是否仍有效
 onMounted(() => {

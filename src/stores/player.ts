@@ -1,5 +1,10 @@
 import { defineStore } from 'pinia'
-import { getSongUrl, type NeteaseSong } from '@src/utils/netease'
+import {
+  getSongUrl,
+  type NeteaseSong,
+  type NeteaseQuality,
+  DEFAULT_QUALITY
+} from '@src/utils/netease'
 
 /** 全局唯一的音频元素（无需挂到组件上） */
 let audio: HTMLAudioElement | null = null
@@ -27,7 +32,8 @@ export const usePlayerStore = defineStore('player', {
     playOrder: 'repeat' as PlayOrder,
     volume: 100,
     muted: false,
-    lastVolume: 100
+    lastVolume: 100,
+    quality: DEFAULT_QUALITY as NeteaseQuality
   }),
   actions: {
     ensureAudio(): HTMLAudioElement {
@@ -69,7 +75,7 @@ export const usePlayerStore = defineStore('player', {
       const el = this.ensureAudio()
       this.loading = true
       try {
-        const url = await getSongUrl(song.id)
+        const url = await getSongUrl(song.id, this.quality)
         this.current = song
         el.src = url
         await el.play()
@@ -79,6 +85,25 @@ export const usePlayerStore = defineStore('player', {
         this.error = error instanceof Error ? error.message : '播放失败'
       } finally {
         this.loading = false
+      }
+    },
+
+    /** 切换音质；若当前正在播放，会以新音质重新加载当前歌曲 */
+    setQuality(quality: NeteaseQuality): void {
+      if (this.quality === quality) return
+      this.quality = quality
+      // 若当前有歌曲在播放或暂停，按新音质重新拉一次 URL
+      if (this.current) {
+        const resumePlay = this.isPlaying
+        const currentTime = this.currentTime
+        void this.playCurrent().then(() => {
+          // 恢复到原进度
+          if (audio) {
+            audio.currentTime = currentTime
+            this.currentTime = currentTime
+            if (!resumePlay) audio.pause()
+          }
+        })
       }
     },
 
@@ -208,7 +233,7 @@ export const usePlayerStore = defineStore('player', {
     }
   },
   persist: {
-    pick: ['volume', 'muted', 'lastVolume', 'playOrder'],
+    pick: ['volume', 'muted', 'lastVolume', 'playOrder', 'quality'],
     storage: localStorage
   }
 })

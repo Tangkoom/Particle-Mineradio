@@ -47,6 +47,34 @@ export interface NeteasePlaylist {
   playCount: number
 }
 
+/** 网易云音质等级：对应 v1 接口的 level 参数 */
+export type NeteaseQuality =
+  | 'standard'
+  | 'higher'
+  | 'exhigh'
+  | 'lossless'
+  | 'hires'
+
+export interface NeteaseQualityOption {
+  value: NeteaseQuality
+  label: string
+  desc: string
+  /** 旧版接口的 br 参数（bps） */
+  br: number
+}
+
+/** 音质可选列表，按从低到高排列；getSongUrl 会从所选音质往下降级 */
+export const NETEASE_QUALITY_OPTIONS: NeteaseQualityOption[] = [
+  { value: 'standard', label: '标准', desc: '128 kbps MP3', br: 128000 },
+  { value: 'higher', label: '较高', desc: '192 kbps MP3', br: 192000 },
+  { value: 'exhigh', label: '极高', desc: '320 kbps MP3', br: 320000 },
+  { value: 'lossless', label: '无损', desc: 'FLAC ~800 kbps', br: 740000 },
+  { value: 'hires', label: 'Hi-Res', desc: 'FLAC 高解析度', br: 1500000 }
+]
+
+/** 默认音质：极高（与原 fallback 链顶层一致） */
+export const DEFAULT_QUALITY: NeteaseQuality = 'exhigh'
+
 interface BridgePayload<T = unknown> {
   ok: boolean
   status?: number
@@ -343,24 +371,37 @@ export async function searchSongs(keyword: string): Promise<NeteaseSong[]> {
   return songs.map(normalizeSong).filter((song) => song.id)
 }
 
-/** 获取歌曲可播放地址，依次尝试旧版 / v1 接口与不同码率 */
-export async function getSongUrl(id: number): Promise<string> {
+/** 获取歌曲可播放地址。
+ *  按所选音质优先 v1 level 接口，失败时按 br 降级到更低码率，
+ *  最后兜底 v1 standard，确保尽量返回一个可用 URL。 */
+export async function getSongUrl(
+  id: number,
+  quality: NeteaseQuality = DEFAULT_QUALITY
+): Promise<string> {
   await ensureBridge()
   const legacyIds = encodeURIComponent(JSON.stringify([id]))
   const v1Ids = encodeURIComponent(JSON.stringify([String(id)]))
+
+  // 从所选音质索引往下降级到 standard，得到 br 候选链
+  const chosenIdx = NETEASE_QUALITY_OPTIONS.findIndex((o) => o.value === quality)
+  const startIdx = chosenIdx >= 0 ? chosenIdx : 2 // 默认 exhigh
+  const downgradeChain = NETEASE_QUALITY_OPTIONS.slice(0, startIdx + 1).reverse()
+
+  // 候选请求：先 v1 level（与所选音质一致），再按 br 从所选降到最低，最后 v1 standard 兜底
   const candidates: Array<{
     method: 'GET' | 'POST'
     path: string
     body?: string
   }> = [
     {
-      method: 'GET',
-      path: `/api/song/enhance/player/url?ids=${legacyIds}&br=320000`
+      method: 'POST',
+      path: '/api/song/enhance/player/url/v1',
+      body: `ids=${v1Ids}&level=${quality}`
     },
-    {
-      method: 'GET',
-      path: `/api/song/enhance/player/url?ids=${legacyIds}&br=128000`
-    },
+    ...downgradeChain.map((opt) => ({
+      method: 'GET' as const,
+      path: `/api/song/enhance/player/url?ids=${legacyIds}&br=${opt.br}`
+    })),
     {
       method: 'POST',
       path: '/api/song/enhance/player/url/v1',
