@@ -263,8 +263,8 @@ const loadLyrics = async (songId: number): Promise<void> => {
     mat.dispose()
   }
   lyricMeshes = []
-  // 限制最多渲染 120 行，避免过多 plane
-  const limit = Math.min(lyricLines.length, 40)
+  // 根据当前歌曲实际歌词行数渲染，硬上限 120 避免过多 plane 影响性能
+  const limit = Math.min(lyricLines.length, 120)
   for (let i = 0; i < limit; i++) {
     const mesh = makeTextMesh(lyricLines[i].text)
     lyricMeshes.push(mesh)
