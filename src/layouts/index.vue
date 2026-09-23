@@ -1,23 +1,21 @@
 <template>
-  <div class="h-full w-full flex flex-col relative">
-    <!-- <video
-      src="@src/assets/video/Black-Dress-Princess-4K.mp4"
-      autoplay
-      muted
-      loop
-      playsinline
-      class="w-full h-full absolute top-0 left-0 object-fill z-[-1]"
-    ></video> -->
-    <NavHeader />
-    <div
-      class="w-full h-[calc(100%-48px)]"
-      @click.stop="isNavTransition = false"
-    >
+  <div
+    class="h-full w-full flex flex-col relative"
+    @click.stop="isNavTransition = false"
+  >
+    <ThreeBg class="absolute inset-0" :controllable="isImmersion" />
+    <NavHeader
+      class="transform transition-all duration-300"
+      :class="{
+        '-translate-y-full opacity-0': isImmersion
+      }"
+    />
+    <div class="w-full h-[calc(100%-48px)] pointer-events-none">
       <div
-        class="relative w-full h-[calc(100%-100px)] p-5 pb-0 box-border flex items-center justify-between"
+        class="relative w-full h-[calc(100%-100px)] p-5 pb-0 box-border flex items-center justify-between pointer-events-none"
       >
         <div
-          class="w-[35%] h-full rounded-2xl relative transform transition-all! duration-300 ease-in-out opacity-100% daily-review-card"
+          class="w-[35%] h-full rounded-2xl relative transform transition-all duration-300 ease-in-out opacity-100% daily-review-card pointer-events-auto"
           :class="{
             '-translate-x-full opacity-0': isImmersion
           }"
@@ -57,7 +55,7 @@
           </div>
         </div>
         <div
-          class="w-[calc(65%-16px)] h-full ml-4 relative transform transition-all! duration-300 ease-in-out opacity-100%"
+          class="w-[calc(65%-16px)] h-full ml-4 relative transform transition-all! duration-300 ease-in-out opacity-100% pointer-events-auto"
           :class="{
             'translate-x-full opacity-0': isImmersion
           }"
@@ -255,7 +253,7 @@
         </div>
         <NavMusic
           ref="navMusicRef"
-          class="absolute -right-78"
+          class="absolute -right-78 pointer-events-auto"
           :class="{
             'right-5!': isNavTransition
           }"
@@ -263,6 +261,10 @@
       </div>
       <!-- 播放器 -->
       <BottomBar
+        class="pointer-events-auto transform transition-all duration-300 ease-in-out"
+        :class="{
+          'translate-y-full opacity-0': isImmersion
+        }"
         @openImmersion="openImmersion"
         @openMusicList="openMusicList"
       />
@@ -274,6 +276,7 @@
 import NavHeader from './header/index.vue'
 import BottomBar from './bottom-bar/index.vue'
 import NavMusic from './nav-music/index.vue'
+import ThreeBg from './three-bg/index.vue'
 import { Minus, ChevronRight, AudioLines, ChartNoAxesColumn } from '@lucide/vue'
 import { commonlyUsedItem } from './util'
 import dayjs from 'dayjs'
@@ -328,10 +331,13 @@ const nextSong = computed(() => {
   return q[(i + 1) % q.length]
 })
 
+const weekdays = ['日', '一', '二', '三', '四', '五', '六']
+
 const updateCurrentTime = (): void => {
-  const weekdays = ['日', '一', '二', '三', '四', '五', '六']
-  currentData.value.date = `${dayjs().format('YYYY年MM月DD日')} 星期${weekdays[dayjs().day()]}`
-  currentData.value.time = dayjs().format('HH:mm')
+  // 只创建一次 dayjs 实例，避免重复构造
+  const now = dayjs()
+  currentData.value.date = `${now.format('YYYY年MM月DD日')} 星期${weekdays[now.day()]}`
+  currentData.value.time = now.format('HH:mm')
 }
 
 const openImmersion = (): void => {
@@ -442,16 +448,29 @@ const openMusicList = (): void => {
   navMusicRef.value!.currentActive = 1
 }
 
+/** ESC 退出沉浸模式；非沉浸态下不响应 */
+const onKeydown = (e: KeyboardEvent): void => {
+  if (e.key !== 'Escape' || !isImmersion.value) return
+  isImmersion.value = false
+}
+
 onMounted(() => {
   updateCurrentTime()
   timer = setInterval(updateCurrentTime)
-  if (userStore.isLoggedIn) void loadTodayStats()
+  if (userStore.isLoggedIn) {
+    void loadTodayStats()
+    // 启动时若没有正在播放的歌曲，同步账号最近播放到 bottom-bar，
+    // 让用户点击 ▶ 按钮即可直接播放，无需先去侧栏点歌单
+    if (!playerStore.current) void playerStore.loadAccountPlaying()
+  }
+  window.addEventListener('keydown', onKeydown)
 })
 
 onUnmounted(() => {
   if (timer) {
     clearInterval(timer)
   }
+  window.removeEventListener('keydown', onKeydown)
 })
 </script>
 
@@ -476,9 +495,7 @@ onUnmounted(() => {
   contain: layout paint style;
   isolation: isolate;
   filter: brightness(1) saturate(1);
-  transform: translateZ(0);
   backface-visibility: hidden;
-  transition: filter 0.28s ease;
   &:before {
     content: '';
     position: absolute;

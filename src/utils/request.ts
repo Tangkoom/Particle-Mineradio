@@ -11,7 +11,8 @@ interface RequestOptions {
 
 const request = async (url: string, body?: RequestOptions): Promise<void> => {
   const headers: Record<string, any> = {
-    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+    'Access-Control-Allow-Origin': '*'
   }
   const method: MethodType = body?.method || 'POST'
   const responseType: RequestType = body?.responseType || 'json'
@@ -31,8 +32,18 @@ const request = async (url: string, body?: RequestOptions): Promise<void> => {
   const response = await fetch(finalUrl, requestConfig)
   const res = await response[responseType]()
 
-  return new Promise((resolve) => {
-    resolve(res)
+  return new Promise((resolve, reject) => {
+    try {
+      if (responseType === 'blob') {
+        return resolve(res)
+      }
+      const { code } = res
+      if (code === 200) {
+        resolve(res)
+      }
+    } catch (err) {
+      reject(err)
+    }
   })
 }
 

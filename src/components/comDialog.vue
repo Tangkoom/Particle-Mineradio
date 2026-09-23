@@ -6,7 +6,7 @@
         class="dialog-overlay data-[state=open]:animate-overlayShow fixed inset-0 z-30 rounded-[15px]"
       />
       <DialogContent
-        :style="{ width: props.width }"
+        :style="{ width: props.width, maxHeight: '80vh' }"
         class="dialog-content fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] z-100"
       >
         <DialogTitle as-child>

@@ -12,7 +12,6 @@
           <svg
             class="absolute inset-0 -rotate-90 cursor-pointer cover-ring"
             viewBox="0 0 48 48"
-            @click="onRingSeek"
           >
             <circle
               cx="24"
@@ -186,8 +185,7 @@
           <Sparkles color="white" :size="18" />
         </div>
         <div class="text-white text-[14px] tabular-nums">
-          {{ formatPlayTime(playerStore.currentTime) }} /
-          {{ formatPlayTime(playerStore.duration) }}
+          {{ currentTimeText }} / {{ durationText }}
         </div>
       </div>
     </div>
@@ -286,21 +284,9 @@ const progressPct = computed(() => {
   return Math.min(100, (playerStore.currentTime / d) * 100)
 })
 
-/** 点击圆环按角度跳转：把点击位置换算成相对圆心的角度（顺时针从 12 点起） */
-const onRingSeek = (e: MouseEvent): void => {
-  if (!playerStore.duration) return
-  const svg = e.currentTarget as SVGElement
-  const rect = svg.getBoundingClientRect()
-  const cx = rect.left + rect.width / 2
-  const cy = rect.top + rect.height / 2
-  const dx = e.clientX - cx
-  const dy = e.clientY - cy
-  // atan2 返回从 3 点方向起的弧度，+π/2 让 12 点方向为 0；负值规范化到 [0,2π)
-  let angle = Math.atan2(dy, dx) + Math.PI / 2
-  if (angle < 0) angle += Math.PI * 2
-  const ratio = angle / (Math.PI * 2)
-  playerStore.seek(ratio * playerStore.duration)
-}
+// 缓存时间格式化结果，避免每次渲染重复调用 formatPlayTime
+const currentTimeText = computed(() => formatPlayTime(playerStore.currentTime))
+const durationText = computed(() => formatPlayTime(playerStore.duration))
 
 const openImmersion = (): void => {
   emits('openImmersion')

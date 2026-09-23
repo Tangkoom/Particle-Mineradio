@@ -29,7 +29,7 @@
       <MusicList
         v-if="currentActive === 1"
         :playlist="selectedPlaylist"
-        :songs="selectedSongs"
+        :songs="currentQueueSongs"
         @at-bottom="(v) => (isAtBottom = v)"
       />
       <MyPlaylist
@@ -49,6 +49,9 @@
 import MyPlaylist from './components/my-playlist.vue'
 import MusicList from './components/music-list.vue'
 import { type NeteasePlaylist, type NeteaseSong } from '@src/utils/netease'
+import { usePlayerStore } from '@src/stores/player'
+
+const playerStore = usePlayerStore()
 
 const currentActive = ref<number>(1)
 const tabList = ref<Record<string, any>[]>([
@@ -59,6 +62,18 @@ const tabList = ref<Record<string, any>[]>([
 
 const selectedPlaylist = ref<NeteasePlaylist | null>(null)
 const selectedSongs = ref<NeteaseSong[] | null>(null)
+
+/**
+ * 「当前队列」tab 展示的歌曲来源：
+ * 优先使用外部注入（每日推荐/最近播放/点击歌单），
+ * 都为空时回退到播放器当前队列，让用户启动后即可看到正在播放的列表
+ */
+const currentQueueSongs = computed<NeteaseSong[] | null>(() => {
+  if (selectedSongs.value && selectedSongs.value.length)
+    return selectedSongs.value
+  if (playerStore.queue.length) return playerStore.queue
+  return null
+})
 
 const isAtBottom = ref<boolean>(false)
 

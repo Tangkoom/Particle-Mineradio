@@ -327,7 +327,9 @@ async function createBridge(): Promise<void> {
   if (!win) throw new Error('网易云桥接窗口创建失败')
   bridgeWin = win
 
-  // 等待页面加载且 Cookie 有效（账号接口返回 profile）
+  // 等待页面加载完成：账号接口能返回响应即认为桥接就绪。
+  // 不要求登录态——二维码登录接口本身就需要在未登录态下调用，
+  // 桥接窗口的作用是同源 fetch + WebView2 Cookie 共享，登录与否都能用。
   const deadline = Date.now() + 30000
   while (Date.now() < deadline) {
     try {
@@ -336,20 +338,74 @@ async function createBridge(): Promise<void> {
         'GET',
         '/api/nuser/account/get'
       )
-      if (normalizeProfile(data)) return
-      // 页面已加载但未登录，不必再等
-      if (
-        data &&
-        (data.code === 200 || data.code === 301 || data.code === -460)
-      )
-        throw new Error('网易云登录态已失效，请重新登录')
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error)
-      if (message.includes('登录态')) throw error
+      // 已登录（profile 存在）或页面已加载但未登录，都视为就绪
+      if (data && typeof data === 'object') return
+    } catch {
+      // 页面尚未加载完成（网络错误/eval 未就绪），继续等待
     }
     await sleep(1200)
   }
   throw new Error('网易云桥接窗口启动超时')
+}
+
+/** 二维码登录：生成扫码 key */
+export async function getQrCodeKey(): Promise<string> {
+  await ensureBridge()
+  const data: any = await requestFromWindow(
+    BRIDGE_LABEL,
+    'POST',
+    '/api/login/qrcode/unikey?type=1'
+  )
+  if (data?.code !== 200 || !data?.unikey) {
+    throw new Error(data?.message || data?.msg || '获取二维码 key 失败')
+  }
+  return data.unikey as string
+}
+
+/** 二维码扫码状态码 */
+export type QrCodeState = 800 | 801 | 802 | 803
+
+export interface QrCodeStatus {
+  code: QrCodeState
+  message: string
+}
+
+/**
+ * 二维码扫码状态查询。
+ * - 800 已过期 / 801 等待扫码 / 802 待确认 / 803 授权成功（已登录）
+ * 授权成功后 Cookie 会被桥接窗口自动持久化，可调用 fetchProfile 取资料。
+ */
+export async function getQrCodeStatus(unikey: string): Promise<QrCodeStatus> {
+  await ensureBridge()
+  const data: any = await requestFromWindow(
+    BRIDGE_LABEL,
+    'POST',
+    `/api/login/qrcode/client/login?key=${encodeURIComponent(unikey)}&type=1`
+  )
+  return {
+    code: (data?.code ?? 0) as QrCodeState,
+    message: data?.message ?? data?.msg ?? ''
+  }
+}
+
+/**
+ * 用桥接窗口当前 Cookie 拉取登录用户资料。
+ * 通常在二维码扫码返回 803、或启动时检测已登录态后调用。
+ * 未登录时返回 null，不抛错。
+ */
+export async function fetchProfile(): Promise<NeteaseProfile | null> {
+  await ensureBridge()
+  const data: any = await requestFromWindow(
+    BRIDGE_LABEL,
+    'GET',
+    '/api/nuser/account/get'
+  )
+  return normalizeProfile(data)
+}
+
+/** 拼接二维码图片地址（无需接口，codekey 参数即扫码 key） */
+export function buildQrCodeImageUrl(unikey: string): string {
+  return `${ORIGIN}/login?codekey=${encodeURIComponent(unikey)}`
 }
 
 /** 搜索单曲（网易云旧版 /api 接口，同源 + 登录 Cookie） */
@@ -533,6 +589,43 @@ export async function getRecentSongs(uid: number): Promise<NeteaseSong[]> {
     result.push(normalizeSong(song))
   }
   return result
+}
+
+/** 网易云歌词行：[时间ms, 文本] */
+export interface NeteaseLyricLine {
+  time: number
+  text: string
+}
+
+/** 拉取歌词，返回按时间排序的行数组（无歌词时返回空） */
+export async function getLyric(songId: number): Promise<NeteaseLyricLine[]> {
+  await ensureBridge()
+  const data: any = await requestFromWindow(
+    BRIDGE_LABEL,
+    'GET',
+    `/api/song/lyric?id=${songId}&lv=1&tv=-1&kv=-1`
+  )
+  if (data?.code !== 200) return []
+  const raw: string = data?.lrc?.lyric ?? ''
+  const lines: NeteaseLyricLine[] = []
+  // 行格式：[mm:ss.xxx]文本，可能多个时间戳共用一行
+  const re = /\[(\d{1,2}):(\d{1,2})(?:[.:](\d{1,3}))?\]/g
+  for (const seg of raw.split('\n')) {
+    const stamps: number[] = []
+    let m: RegExpExecArray | null
+    while ((m = re.exec(seg)) !== null) {
+      const min = parseInt(m[1], 10)
+      const sec = parseInt(m[2], 10)
+      const ms = m[3] ? parseInt(m[3].padEnd(3, '0'), 10) : 0
+      stamps.push(min * 60 + sec + ms / 1000)
+    }
+    const text = seg.replace(re, '').trim()
+    for (const t of stamps) {
+      lines.push({ time: t, text })
+    }
+  }
+  lines.sort((a, b) => a.time - b.time)
+  return lines
 }
 
 /** 退出登录：关闭桥接 / 登录窗口并清空 WebView2 浏览数据（含 HttpOnly MUSIC_U） */
