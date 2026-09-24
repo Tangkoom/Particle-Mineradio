@@ -80,11 +80,10 @@ import {
   type NeteaseSong
 } from '@src/utils/netease'
 
-const props =
-  defineProps<{
-      playlist: NeteasePlaylist | null
-      songs: NeteaseSong[] | null
-    }>()
+const props = defineProps<{
+  playlist: NeteasePlaylist | null
+  songs: NeteaseSong[] | null
+}>()
 
 const emits = defineEmits<{
   (e: 'at-bottom', value: boolean): void

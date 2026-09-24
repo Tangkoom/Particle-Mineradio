@@ -65,10 +65,14 @@ const selectedSongs = ref<NeteaseSong[] | null>(null)
 
 /**
  * 「当前队列」tab 展示的歌曲来源：
- * 优先使用外部注入（每日推荐/最近播放/点击歌单），
+ * 初始化或点击「每日推荐/最近播放」时使用外部注入的 songs；
+ * 点击歌单时 selectedPlaylist 有值，此时不注入 songs，
+ * 让 MusicList 落到 playlist 分支拉取歌单曲目；
  * 都为空时回退到播放器当前队列，让用户启动后即可看到正在播放的列表
  */
 const currentQueueSongs = computed<NeteaseSong[] | null>(() => {
+  // 选中歌单时走 playlist 分支，避免 songs 抢占
+  if (selectedPlaylist.value) return null
   if (selectedSongs.value && selectedSongs.value.length)
     return selectedSongs.value
   if (playerStore.queue.length) return playerStore.queue
