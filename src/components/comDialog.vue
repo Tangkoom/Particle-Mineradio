@@ -19,7 +19,8 @@
               <slot name="close" />
               <div
                 v-if="slotExist('close')"
-                class="common-transparent cursor-pointer w-7 h-7 rounded-lg flex items-center justify-center"
+                id="common-transparent"
+                class="cursor-pointer w-7 h-7 rounded-lg flex items-center justify-center"
                 @click="clear"
               >
                 <X color="white" :size="16" />
