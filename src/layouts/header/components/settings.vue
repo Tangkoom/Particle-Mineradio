@@ -1,28 +1,40 @@
 <template>
-  <ComDialog width="500px">
-    <template #trigger>
-      <DialogTrigger class="cursor-pointer">
-        <div
-          class="common-transparent cursor-pointer w-7 h-7 rounded-lg flex items-center justify-center"
-        >
-          <Settings2 color="#ffffff" :size="16" />
-        </div>
-      </DialogTrigger>
-    </template>
+  <ComDialog v-model="isShow" width="500px" title="设置">
     <template #content>
-      <div>
-        <div class="text-white text-[14px] text-start py-2">主题</div>
-        <div class="flex items-center w-full overflow-x-auto">
-          <div
-            v-for="theme in themes"
-            :key="theme.value"
-            @click="updateTheme(theme.value)"
-            :class="{
-              active: useStore.theme === theme.value
-            }"
-            class="w-25 h-25 rounded-lg cursor-pointer mr-2 border border-solid border-[#171717] hover:border-[#777]"
-          >
-            <component :is="theme.component" />
+      <div class="pb-4 px-5">
+        <div class="pb-3.75">
+          <div class="text-white text-[14px] text-start py-2">主题</div>
+          <div class="flex items-center w-full overflow-x-auto">
+            <div
+              v-for="theme in themes"
+              :key="theme.value"
+              @click="updateTheme(theme.value)"
+              :class="{
+                active: useStore.settings.theme === theme.value
+              }"
+              class="w-25 h-25 rounded-lg overflow-hidden cursor-pointer mr-2 border border-solid border-[#333] hover:border-[#777]"
+            >
+              <component :is="theme.component" />
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center justify-between">
+          <div class="text-white text-[14px] text-start py-2">退出时动作</div>
+          <div class="flex items-center">
+            <div
+              v-for="radio in radioList"
+              :key="radio.value"
+              class="flex items-center ml-2"
+              @click="onRadio(radio.value)"
+            >
+              <div
+                :class="{
+                  'active-radio': useStore.settings.exitAction === radio.value
+                }"
+                class="relative w-5 h-5 rounded-[50%] border border-solid border-[#333]"
+              ></div>
+              <div class="text-white text-[14px] ml-2">{{ radio.name }}</div>
+            </div>
           </div>
         </div>
       </div>
@@ -31,27 +43,54 @@
 </template>
 
 <script setup lang="ts">
-import { Settings2 } from '@lucide/vue'
 import Lines from '@src/layouts/three-bg/components/lines.vue'
 import MusicLine from '@src/layouts/three-bg/components/music-line.vue'
 import Weather from '@src/layouts/three-bg/components/weather.vue'
+import Video from '@src/layouts/three-bg/components/video.vue'
 import { useUserStore } from '@src/stores/user'
 
 const useStore = useUserStore()
 
+const isShow = ref<boolean>(false)
+
 const themes = reactive<Record<string, any>[]>([
   { value: 0, component: markRaw(Lines) },
   { value: 1, component: markRaw(MusicLine) },
-  { value: 2, component: markRaw(Weather) }
+  { value: 2, component: markRaw(Weather) },
+  { value: 3, component: markRaw(Video) }
+])
+
+const radioList = reactive<Record<string, any>[]>([
+  { name: '最小化关闭', value: 0 },
+  { name: '退出应用', value: 1 }
 ])
 
 const updateTheme = (val: number): void => {
-  useStore.theme = val
+  useStore.settings.theme = val
+}
+
+const onRadio = (val: number): void => {
+  useStore.settings.exitAction = val
 }
 </script>
 
 <style scoped lang="scss">
 .active {
   border-color: #fff;
+}
+
+.active-radio {
+  border-color: #fff;
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #fff;
+  }
 }
 </style>

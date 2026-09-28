@@ -6,7 +6,10 @@ export const useUserStore = defineStore('user', {
     borderRadius: '15px' as string,
     profile: null as NeteaseProfile | null,
     playlists: [] as NeteasePlaylist[],
-    theme: 1 as number
+    settings: {
+      theme: 1 as number,
+      exitAction: 0 as number
+    }
   }),
   getters: {
     isLoggedIn: (state): boolean => state.profile !== null
@@ -28,7 +31,7 @@ export const useUserStore = defineStore('user', {
     }
   },
   persist: {
-    pick: ['profile', 'playlists', 'theme'],
+    pick: ['profile', 'playlists', 'settings'],
     storage: localStorage
   }
 })

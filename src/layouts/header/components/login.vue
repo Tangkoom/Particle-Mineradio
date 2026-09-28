@@ -1,149 +1,149 @@
 <template>
-  <ComDialog customClose width="520px">
-    <template #trigger>
-      <DialogTrigger
-        id="common-transparent"
-        class="fixed top-2 left-2 w-38 h-12 flex items-center px-2 rounded-4xl cursor-pointer"
+  <div class="relative top-2 max-w-38 h-full">
+    <div
+      id="common-transparent"
+      class="w-full h-full flex items-center box-border px-2 rounded-4xl cursor-pointer"
+      @click="openDialog"
+    >
+      <AvatarRoot
+        class="bg-black inline-flex h-9 w-9 select-none items-center justify-center overflow-hidden rounded-full align-middle"
       >
-        <AvatarRoot
-          class="bg-black inline-flex h-9 w-9 select-none items-center justify-center overflow-hidden rounded-full align-middle"
-        >
-          <AvatarImage
-            v-if="userStore.profile?.avatarUrl"
-            class="h-full w-full rounded-inherit object-cover"
-            :src="userStore.profile.avatarUrl"
-            alt="用户头像"
-          />
-          <User v-else color="rgba(255,255,255,0.8)" :size="18" />
-        </AvatarRoot>
-        <div class="text-white text-[12px] pl-1 truncate w-[calc(100%-40px)]">
-          {{ userStore.profile?.nickname || '未登录' }}
-        </div>
-      </DialogTrigger>
-    </template>
-    <template #close>
-      <div
-        id="common-transparent"
-        class="text-[rgba(255,226,226,.78)] px-2.75 flex items-center justify-center bg-[rgb(92,25,31)]! rounded-lg text-[14px] cursor-pointer"
-        :class="{ 'opacity-40 pointer-events-none': !userStore.isLoggedIn }"
-        @click="handleLogout"
-      >
-        退出登录
+        <AvatarImage
+          v-if="userStore.profile?.avatarUrl"
+          class="h-full w-full rounded-inherit object-cover"
+          :src="userStore.profile.avatarUrl"
+          alt="用户头像"
+        />
+        <User v-else color="rgba(255,255,255,0.8)" :size="18" />
+      </AvatarRoot>
+      <div class="text-white text-[12px] px-2 truncate">
+        {{ userStore.profile?.nickname || '未登录' }}
       </div>
-      <DialogClose
-        aria-label="Close"
-        id="common-transparent"
-        class="ml-2.75 cursor-pointer commmon-shadow hover:bg-red-500 w-7 h-7 rounded-lg flex items-center justify-center"
-      >
-        <X color="white" :size="16" />
-      </DialogClose>
-    </template>
-    <template #content>
-      <div ref="flowContainerRef" class="pt-5 flex justify-around relative">
-        <div>
-          <div class="login-platform-tabs relative flex items-center px-2.75">
-            <div
-              class="w-4 h-8 border border-solid border-[rgba(255,226,225,.1)] rounded-full flex items-center justify-center"
-            >
-              <Menu :size="16" color="rgba(255,226,225,.9)" />
-            </div>
-            <div class="flex items-center justify-center pl-2.75">
-              <div>
-                <span v-if="!userStore.profile?.avatarUrl" class="provider-logo"
-                  >NE</span
-                >
-                <img
-                  v-else
-                  :src="userStore.profile?.avatarUrl"
-                  alt=""
-                  class="w-7.75 h-7.75 rounded-[10px]"
-                />
-              </div>
-              <b class="text-white pl-2.75">网易云</b>
-              <small class="text-yellow-500 font-bold pl-2.75">VIP</small>
-              <SwitchRoot
-                id="airplane-mode"
-                v-model="switchState"
-                class="ml-2.75 w-8 h-5 shadow-sm flex data-[state=unchecked]:bg-stone-300 data-[state=checked]:bg-stone-800 dark:data-[state=unchecked]:bg-stone-800 dark:data-[state=checked]:bg-stone-700 border border-stone-300 data-[state=checked]:border-stone-700 dark:border-stone-700 rounded-full relative transition-[background] focus-within:outline-none focus-within:shadow-[0_0_0_1px] focus-within:border-stone-800 focus-within:shadow-stone-800"
-              >
-                <SwitchThumb
-                  class="w-3.5 h-3.5 my-auto bg-white text-xs flex items-center justify-center shadow-xl rounded-full transition-transform translate-x-0.5 will-change-transform data-[state=checked]:translate-x-full"
-                />
-              </SwitchRoot>
-              <span
-                ref="sourcePortRef"
-                class="flow-port -right-1.5"
-                title="拖到 MR 接入口"
-                @mousedown.stop.prevent="startConnect"
-              ></span>
-            </div>
-          </div>
+    </div>
+    <ComDialog v-model="isShow" isClose width="520px">
+      <template #close>
+        <div
+          id="common-transparent"
+          class="text-[rgba(255,226,226,.78)] h-7 px-2.75 flex items-center justify-center bg-[rgb(92,25,31)]! rounded-lg text-[14px] cursor-pointer mr-2"
+          :class="{ 'opacity-40 pointer-events-none': !userStore.isLoggedIn }"
+          @click="handleLogout"
+        >
+          退出登录
         </div>
-        <div class="login-platform-tabs w-50 relative p-4 box-border">
-          <span
-            ref="targetPortRef"
-            class="flow-port -left-1.5"
-            :class="{
-              'flow-port-active': isConnecting,
-              'flow-port-connected': isConnected
-            }"
-            title="MR 接入口"
-          ></span>
-          <div class="flex items-center pb-2.75">
-            <div class="login-node-orb w-10! h-10!">MR</div>
-            <div class="pl-2.75">
+        <div
+          class="common-transparent cursor-pointer w-7 h-7 rounded-lg flex items-center justify-center"
+          @click="close"
+        >
+          <X color="white" :size="16" />
+        </div>
+      </template>
+      <template #content>
+        <div ref="flowContainerRef" class="pb-5 flex justify-around relative">
+          <div>
+            <div class="login-platform-tabs relative flex items-center px-2.75">
               <div
-                class="text-[rgba(255,255,255,.92)] text-[13px] font-bold text-start"
+                class="w-4 h-8 border border-solid border-[rgba(255,226,225,.1)] rounded-full flex items-center justify-center"
               >
-                MR
+                <Menu :size="16" color="rgba(255,226,225,.9)" />
               </div>
-              <div class="text-[rgba(255,255,255,.43)] text-[10px]">
-                等待接入
+              <div class="flex items-center justify-center pl-2.75">
+                <div>
+                  <span
+                    v-if="!userStore.profile?.avatarUrl"
+                    class="provider-logo"
+                    >NE</span
+                  >
+                  <img
+                    v-else
+                    :src="userStore.profile?.avatarUrl"
+                    alt=""
+                    class="w-7.75 h-7.75 rounded-[10px]"
+                  />
+                </div>
+                <b class="text-white pl-2.75">网易云</b>
+                <small class="text-yellow-500 font-bold pl-2.75">VIP</small>
+                <SwitchRoot
+                  id="airplane-mode"
+                  v-model="switchState"
+                  class="ml-2.75 w-8 h-5 shadow-sm flex data-[state=unchecked]:bg-stone-300 data-[state=checked]:bg-stone-800 dark:data-[state=unchecked]:bg-stone-800 dark:data-[state=checked]:bg-stone-700 border border-stone-300 data-[state=checked]:border-stone-700 dark:border-stone-700 rounded-full relative transition-[background] focus-within:outline-none focus-within:shadow-[0_0_0_1px] focus-within:border-stone-800 focus-within:shadow-stone-800"
+                >
+                  <SwitchThumb
+                    class="w-3.5 h-3.5 my-auto bg-white text-xs flex items-center justify-center shadow-xl rounded-full transition-transform translate-x-0.5 will-change-transform data-[state=checked]:translate-x-full"
+                  />
+                </SwitchRoot>
+                <span
+                  ref="sourcePortRef"
+                  class="flow-port -right-1.5"
+                  title="拖到 MR 接入口"
+                  @mousedown.stop.prevent="startConnect"
+                ></span>
               </div>
             </div>
           </div>
-          <div class="login-mode-nodes">
-            <div
-              style="box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05)"
-              class="flex items-center p-1.5 mb-2.75 relative rounded-xl border border-solid border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.028)]"
-            >
-              <div class="provider-logo">QR</div>
-              <b
-                class="font-bold text-white text-[13px] pl-2.75"
-                @click="handleLogin"
-                >{{ logging ? '登录中…' : '扫码登录' }}</b
-              >
+          <div class="login-platform-tabs w-50 relative p-4 box-border">
+            <span
+              ref="targetPortRef"
+              class="flow-port -left-1.5"
+              :class="{
+                'flow-port-active': isConnecting,
+                'flow-port-connected': isConnected
+              }"
+              title="MR 接入口"
+            ></span>
+            <div class="flex items-center pb-2.75">
+              <div class="login-node-orb w-10! h-10!">MR</div>
+              <div class="pl-2.75">
+                <div
+                  class="text-[rgba(255,255,255,.92)] text-[13px] font-bold text-start"
+                >
+                  MR
+                </div>
+                <div class="text-[rgba(255,255,255,.43)] text-[10px]">
+                  等待接入
+                </div>
+              </div>
             </div>
-            <div
-              class="flex items-center p-1.5 mb-2.75 relative rounded-xl border border-solid border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.028)]"
-            >
-              <div class="provider-logo">CK</div>
-              <b class="font-bold text-white text-[13px] pl-2.75">Cookie</b>
+            <div class="login-mode-nodes">
+              <div
+                style="box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05)"
+                class="flex items-center p-1.5 mb-2.75 relative rounded-xl border border-solid border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.028)]"
+              >
+                <div class="provider-logo">QR</div>
+                <b class="font-bold text-white text-[13px] pl-2.75">
+                  {{ logging ? '登录中…' : '扫码登录' }}
+                </b>
+              </div>
+              <div
+                class="flex items-center p-1.5 mb-2.75 relative rounded-xl border border-solid border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.028)]"
+              >
+                <div class="provider-logo">CK</div>
+                <b class="font-bold text-white text-[13px] pl-2.75">Cookie</b>
+              </div>
             </div>
           </div>
+          <svg
+            ref="flowSvgRef"
+            class="flow-svg"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              v-if="tempLine"
+              :d="tempLinePath"
+              class="flow-temp-path"
+              fill="none"
+            />
+            <path
+              v-for="c in connections"
+              :key="c.id"
+              :d="c.path"
+              class="flow-path"
+              fill="none"
+            />
+          </svg>
         </div>
-        <svg
-          ref="flowSvgRef"
-          class="flow-svg"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            v-if="tempLine"
-            :d="tempLinePath"
-            class="flow-temp-path"
-            fill="none"
-          />
-          <path
-            v-for="c in connections"
-            :key="c.id"
-            :d="c.path"
-            class="flow-path"
-            fill="none"
-          />
-        </svg>
-      </div>
-    </template>
-  </ComDialog>
+      </template>
+    </ComDialog>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -172,6 +172,7 @@ interface Point {
 const userStore = useUserStore()
 const playerStore = usePlayerStore()
 
+const isShow = ref<boolean>(false)
 const isConnecting = ref<boolean>(false)
 const isConnected = ref<boolean>(false)
 const logging = ref<boolean>(false)
@@ -284,9 +285,43 @@ const onConnectEnd = (e: MouseEvent): void => {
       }
     ]
     isConnected.value = true
+    handleLogin()
   }
 
   tempLine.value = null
+}
+
+const openDialog = (): void => {
+  isShow.value = true
+  // 已登录则打开弹窗后自动连线
+  if (userStore.isLoggedIn) {
+    nextTick(() => connectFlow())
+  }
+}
+
+const close = (): void => {
+  isShow.value = false
+}
+
+/** 根据当前 DOM 坐标绘制一条连接线（已连接时不重复添加） */
+const connectFlow = (): void => {
+  if (isConnected.value) return
+  if (!sourcePortRef.value || !targetPortRef.value || !flowSvgRef.value) return
+  const start = getCenterInSvg(sourcePortRef.value)
+  const end = getCenterInSvg(targetPortRef.value)
+  connections.value = [
+    ...connections.value,
+    {
+      id: connectionSeq++,
+      path: bezierArcPath(start.x, start.y, end.x, end.y)
+    }
+  ]
+  isConnected.value = true
+}
+
+const disconnectFlow = (): void => {
+  connections.value = []
+  isConnected.value = false
 }
 
 /** 打开网易云登录窗口，登录成功后保存用户信息并拉取歌单与最近播放 */
@@ -296,6 +331,8 @@ const handleLogin = async (): Promise<void> => {
   try {
     const profile = await loginWithNetease()
     userStore.setProfile(profile)
+    // 登录成功后连线
+    connectFlow()
     // 登录成功后用 Cookie 拉取用户歌单列表
     try {
       const playlists = await getUserPlaylists(profile.userId)
@@ -308,6 +345,7 @@ const handleLogin = async (): Promise<void> => {
     void playerStore.loadAccountPlaying()
   } catch (error) {
     console.log('网易云登录取消或失败', error)
+    disconnectFlow()
   } finally {
     logging.value = false
   }
@@ -316,6 +354,7 @@ const handleLogin = async (): Promise<void> => {
 /** 退出登录：停止播放、清除登录态与 WebView Cookie */
 const handleLogout = async (): Promise<void> => {
   if (!userStore.isLoggedIn) return
+  disconnectFlow()
   playerStore.stop()
   userStore.clearProfile()
   options.value = []

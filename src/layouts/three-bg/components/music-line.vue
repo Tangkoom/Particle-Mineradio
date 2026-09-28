@@ -300,6 +300,13 @@ const animate = (): void => {
   const isPlaying = playerStore.isPlaying
   let realAllZero = false
 
+  // 歌曲变化时拉取歌词（替代 watch，零额外开销）
+  const songId = playerStore.current?.id
+  if (songId && songId !== lastSongId) {
+    lastSongId = songId
+    void loadLyrics(songId)
+  }
+
   // 仅在播放中或 analyser 尚未初始化时同步分析器，避免每帧重复调用
   if (isPlaying || !analyser) {
     ensureAnalyser()
@@ -373,25 +380,6 @@ const animate = (): void => {
 
   renderer?.render(scene, camera)
 }
-
-// 播放状态变化：尝试 resume AudioContext（用户手势已发生）
-watch(
-  () => playerStore.isPlaying,
-  (playing) => {
-    if (playing) ensureAnalyser()
-  }
-)
-
-// 当前歌曲变化：拉取歌词
-watch(
-  () => playerStore.current?.id,
-  (id) => {
-    if (id && id !== lastSongId) {
-      lastSongId = id
-      void loadLyrics(id)
-    }
-  }
-)
 
 onMounted(() => {
   initScene()

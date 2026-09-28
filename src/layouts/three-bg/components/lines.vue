@@ -25,6 +25,7 @@ const canvasRef =
   useTemplateRef<InstanceType<typeof HTMLDivElement>>('canvasRef')
 
 let resizeObserver: ResizeObserver | null = null
+let lastControllable = false
 
 /** 同步交互开关：关闭时禁用 OrbitControls 并让 canvas 不接收指针事件 */
 const syncControllable = (enabled: boolean): void => {
@@ -143,18 +144,20 @@ const onResize = (): void => {
 }
 
 const animate = (): void => {
+  // controllable 变化时同步（替代 watch，零额外开销）
+  if (props.controllable !== lastControllable) {
+    lastControllable = props.controllable
+    syncControllable(props.controllable)
+  }
   // 仅在交互开启时更新控制器，避免每帧无谓的 damping 计算
   if (controls.enabled) controls.update()
   renderer.render(scene, camera)
 }
 
-watch(
-  () => props.controllable,
-  (enabled) => syncControllable(enabled)
-)
-
 onMounted(() => {
   init()
+  lastControllable = props.controllable
+  syncControllable(props.controllable)
 })
 
 onBeforeUnmount(() => {

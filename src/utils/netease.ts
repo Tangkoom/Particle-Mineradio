@@ -49,11 +49,7 @@ export interface NeteasePlaylist {
 
 /** 网易云音质等级：对应 v1 接口的 level 参数 */
 export type NeteaseQuality =
-  | 'standard'
-  | 'higher'
-  | 'exhigh'
-  | 'lossless'
-  | 'hires'
+  'standard' | 'higher' | 'exhigh' | 'lossless' | 'hires'
 
 export interface NeteaseQualityOption {
   value: NeteaseQuality
@@ -439,9 +435,14 @@ export async function getSongUrl(
   const v1Ids = encodeURIComponent(JSON.stringify([String(id)]))
 
   // 从所选音质索引往下降级到 standard，得到 br 候选链
-  const chosenIdx = NETEASE_QUALITY_OPTIONS.findIndex((o) => o.value === quality)
+  const chosenIdx = NETEASE_QUALITY_OPTIONS.findIndex(
+    (o) => o.value === quality
+  )
   const startIdx = chosenIdx >= 0 ? chosenIdx : 2 // 默认 exhigh
-  const downgradeChain = NETEASE_QUALITY_OPTIONS.slice(0, startIdx + 1).reverse()
+  const downgradeChain = NETEASE_QUALITY_OPTIONS.slice(
+    0,
+    startIdx + 1
+  ).reverse()
 
   // 候选请求：先 v1 level（与所选音质一致），再按 br 从所选降到最低，最后 v1 standard 兜底
   const candidates: Array<{

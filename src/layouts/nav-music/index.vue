@@ -28,6 +28,7 @@
     <div class="w-full h-[calc(100%-92.5px)] relative overflow-hidden">
       <MusicList
         v-if="currentActive === 1"
+        :key="selectedPlaylist?.id ?? 'queue'"
         :playlist="selectedPlaylist"
         :songs="currentQueueSongs"
         @at-bottom="(v) => (isAtBottom = v)"

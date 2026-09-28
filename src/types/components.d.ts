@@ -25,14 +25,6 @@ declare module 'vue' {
     AvatarImage: typeof import('reka-ui')['AvatarImage']
     AvatarRoot: typeof import('reka-ui')['AvatarRoot']
     ComDialog: typeof import('./../components/comDialog.vue')['default']
-    DialogClose: typeof import('reka-ui')['DialogClose']
-    DialogContent: typeof import('reka-ui')['DialogContent']
-    DialogDescription: typeof import('reka-ui')['DialogDescription']
-    DialogOverlay: typeof import('reka-ui')['DialogOverlay']
-    DialogPortal: typeof import('reka-ui')['DialogPortal']
-    DialogRoot: typeof import('reka-ui')['DialogRoot']
-    DialogTitle: typeof import('reka-ui')['DialogTitle']
-    DialogTrigger: typeof import('reka-ui')['DialogTrigger']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     ScrollAreaRoot: typeof import('reka-ui')['ScrollAreaRoot']
@@ -41,6 +33,5 @@ declare module 'vue' {
     ScrollAreaViewport: typeof import('reka-ui')['ScrollAreaViewport']
     SwitchRoot: typeof import('reka-ui')['SwitchRoot']
     SwitchThumb: typeof import('reka-ui')['SwitchThumb']
-    VisuallyHidden: typeof import('reka-ui')['VisuallyHidden']
   }
 }

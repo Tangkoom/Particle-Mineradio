@@ -41,6 +41,7 @@ html,
 }
 
 #app {
+  position: relative;
   border-radius: var(--app-border-radius, 15px);
   background-color: black;
   font-family: 'harmonyos';

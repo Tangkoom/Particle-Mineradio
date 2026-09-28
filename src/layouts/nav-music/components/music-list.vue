@@ -189,15 +189,8 @@ const onPlaySong = (index: number): void => {
   void playerStore.playPlaylist(musicList.value, index)
 }
 
-watch(
-  () => [props.playlist, props.songs],
-  () => {
-    void loadSongs()
-  },
-  { immediate: true }
-)
-
 onMounted(() => {
+  void loadSongs()
   applyScroll()
 })
 
