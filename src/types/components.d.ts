@@ -11,6 +11,19 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AutocompleteAnchor: typeof import('reka-ui')['AutocompleteAnchor']
+    AutocompleteContent: typeof import('reka-ui')['AutocompleteContent']
+    AutocompleteEmpty: typeof import('reka-ui')['AutocompleteEmpty']
+    AutocompleteGroup: typeof import('reka-ui')['AutocompleteGroup']
+    AutocompleteInput: typeof import('reka-ui')['AutocompleteInput']
+    AutocompleteItem: typeof import('reka-ui')['AutocompleteItem']
+    AutocompleteLabel: typeof import('reka-ui')['AutocompleteLabel']
+    AutocompleteRoot: typeof import('reka-ui')['AutocompleteRoot']
+    AutocompleteSeparator: typeof import('reka-ui')['AutocompleteSeparator']
+    AutocompleteTrigger: typeof import('reka-ui')['AutocompleteTrigger']
+    AutocompleteViewport: typeof import('reka-ui')['AutocompleteViewport']
+    AvatarImage: typeof import('reka-ui')['AvatarImage']
+    AvatarRoot: typeof import('reka-ui')['AvatarRoot']
     ComDialog: typeof import('./../components/comDialog.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
@@ -18,5 +31,7 @@ declare module 'vue' {
     ScrollAreaScrollbar: typeof import('reka-ui')['ScrollAreaScrollbar']
     ScrollAreaThumb: typeof import('reka-ui')['ScrollAreaThumb']
     ScrollAreaViewport: typeof import('reka-ui')['ScrollAreaViewport']
+    SwitchRoot: typeof import('reka-ui')['SwitchRoot']
+    SwitchThumb: typeof import('reka-ui')['SwitchThumb']
   }
 }
