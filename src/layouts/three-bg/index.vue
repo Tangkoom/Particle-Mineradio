@@ -4,6 +4,7 @@
     <MusicLine v-else-if="current === 1" :controllable="props.controllable" />
     <Weather v-else-if="current === 2" :controllable="props.controllable" />
     <Video v-else-if="current === 3" />
+    <SkullHead v-else-if="current === 4" :controllable="props.controllable" />
   </div>
 </template>
 
@@ -12,6 +13,7 @@ import Lines from './components/lines.vue'
 import MusicLine from './components/music-line.vue'
 import Weather from './components/weather.vue'
 import Video from './components/video.vue'
+import SkullHead from './components/skull-head.vue'
 import { useUserStore } from '@src/stores/user'
 
 const useStore = useUserStore()

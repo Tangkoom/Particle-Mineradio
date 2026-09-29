@@ -40,7 +40,13 @@
     ],
     "windows": {
       "nsis": {
-        "languages": ["SimpChinese", "English"]
+        "installerIcon": "icons/icon.ico",
+        "languages": ["SimpChinese"],
+        "displayLanguageSelector": false,
+        "startMenuFolder": "Particle-Mineradio"
+      },
+      "wix": {
+        "language": "zh-CN"
       }
     }
   }
