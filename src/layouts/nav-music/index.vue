@@ -6,10 +6,10 @@
   >
     <div class="playlist-panel-sticky rounded-2xl p-[8px_12px]">
       <div class="flex items-center font-bold text-white text-[14px]">
-        歌单 / 列表
+        {{ t('歌单 / 列表') }}
       </div>
       <div class="text-[10px] text-[rgba(255,255,255,.32)] mt-1">
-        QUEUE · 鼠标点击其他地方自动隐藏
+        {{ t('QUEUE · 鼠标点击其他地方自动隐藏') }}
       </div>
       <div class="flex items-center gap-2 mt-2">
         <div
@@ -21,7 +21,7 @@
           class="text-center p-[4px_10px] rounded-4xl border border-solid border-[rgba(255,255,255,.1)] bg-[rgba(255,255,255,.03)] text-[rgba(255,255,255,.55)] cursor-pointer text-[11px]"
           @click="activeClick(item.value)"
         >
-          {{ item.name }}
+          {{ t(item.name) }}
         </div>
       </div>
     </div>
@@ -51,6 +51,9 @@ import MyPlaylist from './components/my-playlist.vue'
 import MusicList from './components/music-list.vue'
 import { type NeteasePlaylist, type NeteaseSong } from '@src/utils/netease'
 import { usePlayerStore } from '@src/stores/player'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n({ useScope: 'global' })
 
 const playerStore = usePlayerStore()
 

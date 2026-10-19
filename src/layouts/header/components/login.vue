@@ -12,12 +12,12 @@
           v-if="userStore.profile?.avatarUrl"
           class="h-full w-full rounded-inherit object-cover"
           :src="userStore.profile.avatarUrl"
-          alt="用户头像"
+          :alt="t('用户头像')"
         />
         <User v-else color="rgba(255,255,255,0.8)" :size="18" />
       </AvatarRoot>
       <div class="text-white text-[12px] px-2 truncate">
-        {{ userStore.profile?.nickname || '未登录' }}
+        {{ userStore.profile?.nickname || t('未登录') }}
       </div>
     </div>
     <ComDialog v-model="isShow" isClose width="520px">
@@ -28,7 +28,7 @@
           :class="{ 'opacity-40 pointer-events-none': !userStore.isLoggedIn }"
           @click="handleLogout"
         >
-          退出登录
+          {{ t('退出登录') }}
         </div>
         <div
           id="common-transparent"
@@ -61,7 +61,7 @@
                     class="w-7.75 h-7.75 rounded-[10px]"
                   />
                 </div>
-                <b class="text-white pl-2.75">网易云</b>
+                <b class="text-white pl-2.75">{{ t('网易云') }}</b>
                 <small class="text-yellow-500 font-bold pl-2.75">VIP</small>
                 <SwitchRoot
                   id="airplane-mode"
@@ -75,7 +75,7 @@
                 <span
                   ref="sourcePortRef"
                   class="flow-port -right-1.5"
-                  title="拖到 MR 接入口"
+                  :title="t('拖到 MR 接入口')"
                   @mousedown.stop.prevent="startConnect"
                 ></span>
               </div>
@@ -89,7 +89,7 @@
                 'flow-port-active': isConnecting,
                 'flow-port-connected': isConnected
               }"
-              title="MR 接入口"
+              :title="t('MR 接入口')"
             ></span>
             <div class="flex items-center pb-2.75">
               <div class="login-node-orb w-10! h-10!">MR</div>
@@ -100,7 +100,7 @@
                   MR
                 </div>
                 <div class="text-[rgba(255,255,255,.43)] text-[10px]">
-                  等待接入
+                  {{ t('等待接入') }}
                 </div>
               </div>
             </div>
@@ -111,7 +111,7 @@
               >
                 <div class="provider-logo">QR</div>
                 <b class="font-bold text-white text-[13px] pl-2.75">
-                  {{ logging ? '登录中…' : '扫码登录' }}
+                  {{ logging ? t('登录中…') : t('扫码登录') }}
                 </b>
               </div>
               <div
@@ -157,6 +157,7 @@ import {
 } from '@src/utils/netease'
 import { useUserStore } from '@src/stores/user'
 import { usePlayerStore } from '@src/stores/player'
+import { useI18n } from 'vue-i18n'
 
 /** 搜索结果选项 */
 interface SongOption {
@@ -169,6 +170,8 @@ interface Point {
   x: number
   y: number
 }
+
+const { t } = useI18n({ useScope: 'global' })
 
 const userStore = useUserStore()
 const playerStore = usePlayerStore()

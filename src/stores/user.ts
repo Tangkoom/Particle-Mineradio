@@ -8,7 +8,8 @@ export const useUserStore = defineStore('user', {
     playlists: [] as NeteasePlaylist[],
     settings: {
       theme: 1 as number,
-      exitAction: 0 as number
+      exitAction: 0 as number,
+      lang: 'zh' as string
     }
   }),
   getters: {
@@ -31,7 +32,7 @@ export const useUserStore = defineStore('user', {
     }
   },
   persist: {
-    pick: ['profile', 'playlists', 'settings'],
+    pick: ['profile', 'playlists', 'settings', 'lang'],
     storage: localStorage
   }
 })

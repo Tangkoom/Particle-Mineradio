@@ -32,24 +32,24 @@
             </div>
             <div class="flex items-center text-[12px] text-[#AFACAC] mb-4">
               <Minus color="white" :size="16" />
-              每日热评
+              {{ t('每日热评') }}
             </div>
             <div class="flex items-center">
               <div
                 class="tag p-[4px_8px] text-[12px] text-[#AFACAC] border border-solid border-[#171717] rounded-2xl cursor-pointer mr-2"
                 @click="cycleQuote"
               >
-                换一条
+                {{ t('换一条') }}
               </div>
               <div
                 class="tag p-[4px_8px] text-[12px] text-[#AFACAC] border border-solid border-[#171717] rounded-2xl cursor-pointer mr-2"
               >
-                选择MP4
+                {{ t('选择MP4') }}
               </div>
               <div
                 class="tag p-[4px_8px] text-[12px] text-[#AFACAC] border border-solid border-[#171717] rounded-2xl cursor-pointer"
               >
-                展开播放器控制台
+                {{ t('展开播放器控制台') }}
               </div>
             </div>
           </div>
@@ -72,10 +72,10 @@
                   {{ item.en }}
                 </div>
                 <div class="text-white text-[20px] font-bold">
-                  {{ item.title }}
+                  {{ t(item.title) }}
                 </div>
                 <div class="text-[rgba(255,255,255,0.55)] text-[12px]">
-                  {{ item.sub }}
+                  {{ t(item.sub) }}
                 </div>
               </div>
               <div></div>
@@ -89,29 +89,30 @@
               <div class="w-full flex items-center">
                 <div class="w-[55%] commonly-used rounded-2xl p-[12px_20px]">
                   <div class="flex items-center justify-between">
-                    <span class="text-[rgba(255,255,255,0.82)] text-[10px]"
-                      >LISTENING TODAY · 今日聆听</span
-                    >
+                    <span class="text-[rgba(255,255,255,0.82)] text-[10px]">
+                      {{ t('LISTENING TODAY · 今日聆听') }}
+                    </span>
                     <span
                       class="text-[rgba(255,255,255,0.42)] text-[10px] cursor-pointer hover:text-white"
-                      >查看偏好</span
                     >
+                      {{ t('查看偏好') }}
+                    </span>
                   </div>
                   <div class="flex items-center justify-between mt-2">
                     <div class="flex-1 flex flex-col">
                       <span class="text-white text-[20px] font-bold">
-                        {{ todayStats.minutes }}分钟
+                        {{ t('unit.minutes', { value: todayStats.minutes }) }}
                       </span>
                       <span class="text-[rgba(255,255,255,0.42)] text-[10px]">
-                        聆听时长
+                        {{ t('聆听时长') }}
                       </span>
                     </div>
                     <div class="flex-1 flex flex-col">
                       <span class="text-white text-[20px] font-bold">
-                        {{ todayStats.count }}首
+                        {{ t('unit.tracks', { value: todayStats.count }) }}
                       </span>
                       <span class="text-[rgba(255,255,255,0.42)] text-[10px]">
-                        今日听歌
+                        {{ t('今日听歌') }}
                       </span>
                     </div>
                     <div class="flex-1 flex flex-col">
@@ -119,7 +120,7 @@
                         {{ todayStats.topArtist }}
                       </span>
                       <span class="text-[rgba(255,255,255,0.42)] text-[10px]">
-                        最近常听
+                        {{ t('最近常听') }}
                       </span>
                     </div>
                   </div>
@@ -141,12 +142,12 @@
                       <div
                         class="text-[rgba(255,255,255,0.82)] text-[10px] pb-1.75"
                       >
-                        NEXT UP · 接下来播放
+                        {{ t('NEXT UP · 接下来播放') }}
                       </div>
                       <div
                         class="text-[rgba(255,255,255,0.82)] text-[14px] pb-1.75 truncate"
                       >
-                        {{ nextSong?.name || '暂无下一首' }}
+                        {{ nextSong?.name || t('暂无下一首') }}
                       </div>
                       <div
                         class="text-[rgba(255,255,255,0.42)] text-[10px] truncate"
@@ -169,13 +170,13 @@
                 >
                   <div>
                     <div class="text-[rgba(255,255,255,0.82)] text-[10px] pb-1">
-                      FOR YOU · 为你挑选
+                      {{ t('FOR YOU · 为你挑选') }}
                     </div>
                     <div class="text-white text-[18px] font-bold">
-                      换一首，也许正和心意
+                      {{ t('换一首，也许正和心意') }}
                     </div>
                     <div class="text-[rgba(255,255,255,0.42)] text-[10px]">
-                      从每日推荐、歌单与本地音乐中挑选
+                      {{ t('从每日推荐、歌单与本地音乐中挑选') }}
                     </div>
                   </div>
                 </div>
@@ -189,15 +190,15 @@
                     class="w-[calc(100%-84px)] flex flex-col justify-between h-full"
                   >
                     <div class="text-[rgba(255,255,255,0.82)] text-[10px] pb-1">
-                      DISCOVER · 音乐发现
+                      {{ t('DISCOVER · 音乐发现') }}
                     </div>
                     <div class="text-white text-[18px] font-bold">
-                      平台热歌与个人偏好
+                      {{ t('平台热歌与个人偏好') }}
                     </div>
                     <div
                       class="text-[rgba(255,255,255,0.42)] text-[10px] truncate"
                     >
-                      点击进入每日推荐，播放算法为你挑选的歌曲
+                      {{ t('点击进入每日推荐，播放算法为你挑选的歌曲') }}
                     </div>
                   </div>
                   <div class="flex items-center">
@@ -219,13 +220,15 @@
                     class="w-[calc(100%-84px)] flex flex-col justify-between h-full"
                   >
                     <div class="text-[rgba(255,255,255,0.82)] text-[10px] pb-1">
-                      PLATFORM PICKS · 平台推荐
+                      {{ t('PLATFORM PICKS · 平台推荐') }}
                     </div>
-                    <div class="text-white text-[18px] font-bold">我的歌单</div>
+                    <div class="text-white text-[18px] font-bold">
+                      {{ t('我的歌单') }}
+                    </div>
                     <div
                       class="text-[rgba(255,255,255,0.42)] text-[10px] truncate"
                     >
-                      打开歌单列表，点击封面直接整单播放
+                      {{ t('打开歌单列表，点击封面直接整单播放') }}
                     </div>
                   </div>
                   <div class="flex items-center">
@@ -283,11 +286,17 @@ import dayjs from 'dayjs'
 import { useUserStore } from '@src/stores/user'
 import { usePlayerStore } from '@src/stores/player'
 import { getDailySongs, getRecentSongs } from '@src/utils/netease'
+import { useI18n } from 'vue-i18n'
 // import createWindow from '@src/utils/createWindow'
 
 let timer: any
 
+const { t } = useI18n({ useScope: 'global' })
+
 const navMusicRef = useTemplateRef<InstanceType<typeof NavMusic>>('navMusicRef')
+
+
+
 const userStore = useUserStore()
 const playerStore = usePlayerStore()
 
@@ -318,7 +327,7 @@ const dailyQuotes = [
   '生活不会亏待每一个努力向上的人'
 ]
 const quoteIndex = ref(Math.floor(Math.random() * dailyQuotes.length))
-const currentQuote = computed(() => dailyQuotes[quoteIndex.value])
+const currentQuote = computed(() => t(dailyQuotes[quoteIndex.value]))
 const cycleQuote = (): void => {
   quoteIndex.value = (quoteIndex.value + 1) % dailyQuotes.length
 }
@@ -331,12 +340,18 @@ const nextSong = computed(() => {
   return q[(i + 1) % q.length]
 })
 
-const weekdays = ['日', '一', '二', '三', '四', '五', '六']
+/** 与 dayjs 的 day() 一一对应（0 = 周日） */
+const WEEKDAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const
 
 const updateCurrentTime = (): void => {
   // 只创建一次 dayjs 实例，避免重复构造
   const now = dayjs()
-  currentData.value.date = `${now.format('YYYY年MM月DD日')} 星期${weekdays[now.day()]}`
+  currentData.value.date = t('dateFormat', {
+    year: now.year(),
+    month: now.month() + 1,
+    day: now.date(),
+    weekday: t(`weekday.${WEEKDAY_KEYS[now.day()]}`)
+  })
   currentData.value.time = now.format('HH:mm')
 }
 
@@ -382,7 +397,7 @@ const onClickDaily = async (): Promise<void> => {
   try {
     const songs = await getDailySongs()
     if (!songs.length) {
-      playerStore.error = '暂无每日推荐歌曲'
+      playerStore.error = t('暂无每日推荐歌曲')
       return
     }
     await playerStore.playPlaylist(songs, 0)
@@ -390,7 +405,7 @@ const onClickDaily = async (): Promise<void> => {
     navMusicRef.value?.openSongsView(songs)
   } catch (error) {
     playerStore.error =
-      error instanceof Error ? error.message : '获取每日推荐失败'
+      error instanceof Error ? error.message : t('获取每日推荐失败')
   }
 }
 
@@ -401,7 +416,7 @@ const onClickRecent = async (): Promise<void> => {
   try {
     const songs = await getRecentSongs(profile.userId)
     if (!songs.length) {
-      playerStore.error = '暂无最近播放记录'
+      playerStore.error = t('暂无最近播放记录')
       return
     }
     await playerStore.playPlaylist(songs, 0)
@@ -409,7 +424,7 @@ const onClickRecent = async (): Promise<void> => {
     navMusicRef.value?.openSongsView(songs)
   } catch (error) {
     playerStore.error =
-      error instanceof Error ? error.message : '获取最近播放失败'
+      error instanceof Error ? error.message : t('获取最近播放失败')
   }
 }
 

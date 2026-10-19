@@ -4,13 +4,13 @@
     class="flex items-center justify-center gap-2 mt-3.5 text-[12px] text-[rgba(255,255,255,0.55)]"
   >
     <LoaderCircle :size="14" class="animate-spin" />
-    加载中…
+    {{ t('加载中…') }}
   </div>
   <div
     v-else-if="!musicList.length"
     class="mt-3.5 text-center text-[12px] text-[rgba(255,255,255,0.4)]"
   >
-    该歌单暂无可播放歌曲
+    {{ t('该歌单暂无可播放歌曲') }}
   </div>
   <div
     v-else
@@ -79,6 +79,9 @@ import {
   type NeteasePlaylist,
   type NeteaseSong
 } from '@src/utils/netease'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n({ useScope: 'global' })
 
 const props = defineProps<{
   playlist: NeteasePlaylist | null

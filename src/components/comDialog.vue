@@ -77,7 +77,7 @@ const clear = (): void => {
 <style scoped lang="scss">
 .v-enter-active,
 .v-leave-active {
-  transition: opacity 0.3s ease;
+  transition: opacity 0.15s ease;
 }
 
 .v-enter-from,

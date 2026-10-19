@@ -7,9 +7,10 @@
     <ComSearch />
     <div class="window-controls w-45 h-full flex items-center justify-around">
       <div
+        @click="openSetting"
         class="common-transparent cursor-pointer w-7 h-7 rounded-lg flex items-center justify-center"
       >
-        <Settings2 color="white" :size="16" @click="openSetting" />
+        <Settings2 color="white" :size="16" />
       </div>
       <div
         @click="minimize"

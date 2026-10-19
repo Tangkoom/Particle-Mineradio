@@ -52,7 +52,7 @@
           {{ item.name }}
         </div>
         <div class="text-[10.5px] text-[rgba(255,255,255,0.4)]">
-          {{ item.trackCount }} 首
+          {{ t('unit.tracks', { value: item.trackCount }) }}
         </div>
       </div>
     </div>
@@ -64,6 +64,9 @@ import { useUserStore } from '@src/stores/user'
 import { usePlayerStore } from '@src/stores/player'
 import { getPlaylistSongs, type NeteasePlaylist } from '@src/utils/netease'
 import { AudioLines, Play, LoaderCircle } from '@lucide/vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n({ useScope: 'global' })
 
 const emits = defineEmits<{
   (e: 'open-music-list', playlist: NeteasePlaylist): void

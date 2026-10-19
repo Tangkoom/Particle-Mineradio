@@ -50,7 +50,7 @@
         </div>
         <div class="ml-1.5 min-w-0">
           <div class="text-white text-[14px] truncate w-31.5">
-            {{ playerStore.current?.name || '未在播放' }}
+            {{ playerStore.current?.name || t('未在播放') }}
           </div>
           <div class="text-white text-[12px] truncate w-31.5">
             {{ playerStore.current?.artist || '--' }}
@@ -114,7 +114,7 @@
           class="relative text-white text-[14px] font-500 cursor-pointer p-1 rounded-lg common-transparent"
           :class="{ 'bg-white/10': showQualityMenu }"
         >
-          {{ currentQualityLabel }}
+          {{ qualityLabelText }}
           <Transition name="quality-menu">
             <div
               v-if="showQualityMenu"
@@ -128,8 +128,8 @@
                 :class="{ 'bg-white/12': playerStore.quality === opt.value }"
                 @click.stop="onSelectQuality(opt.value)"
               >
-                <span class="font-500">{{ opt.label }}</span>
-                <span class="text-[10px] text-white/40">{{ opt.desc }}</span>
+                <span class="font-500">{{ t(opt.label) }}</span>
+                <span class="text-[10px] text-white/40">{{ t(opt.desc) }}</span>
               </div>
             </div>
           </Transition>
@@ -139,7 +139,7 @@
           :class="{ 'text-[rgba(255,255,255,0.4)]!': !lyricsActive }"
           @click="toggleLyrics"
         >
-          词
+          {{ t('词') }}
         </div>
         <!-- 音量：图标点击静音，hover 出垂直滑条 -->
         <div
@@ -212,12 +212,15 @@ import {
 } from '@lucide/vue'
 import { usePlayerStore, formatPlayTime } from '@src/stores/player'
 import { markRaw } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   NETEASE_QUALITY_OPTIONS,
   type NeteaseQuality
 } from '@src/utils/netease'
 
 const emits = defineEmits(['openImmersion', 'openMusicList', 'openLyrics'])
+
+const { t } = useI18n({ useScope: 'global' })
 
 const playerStore = usePlayerStore()
 
@@ -228,8 +231,12 @@ const showQualityMenu = ref<boolean>(false)
 const qualityOptions = NETEASE_QUALITY_OPTIONS
 const currentQualityLabel = computed(
   () =>
-    qualityOptions.find((o) => o.value === playerStore.quality)?.label ?? '极高'
+    qualityOptions.find((o) => o.value === playerStore.quality)?.label ??
+    t('极高')
 )
+
+/** 音质标签参与翻译，随语言切换实时更新 */
+const qualityLabelText = computed(() => t(currentQualityLabel.value))
 
 const toggleLyrics = (): void => {
   lyricsActive.value = !lyricsActive.value

@@ -1,9 +1,11 @@
 <template>
-  <ComDialog v-model="isShow" width="500px" title="设置">
+  <ComDialog v-model="isShow" width="500px" :title="t('设置')">
     <template #content>
       <div class="pb-4 px-5">
         <div class="pb-3.75">
-          <div class="text-white text-[14px] text-start py-2">主题</div>
+          <div class="text-white text-[14px] text-start py-2">
+            {{ t('主题') }}
+          </div>
           <div
             ref="themeScrollRef"
             :class="{ dragging: isDragging }"
@@ -29,7 +31,48 @@
           </div>
         </div>
         <div class="flex items-center justify-between">
-          <div class="text-white text-[14px] text-start py-2">退出时动作</div>
+          <div class="text-white text-[14px] text-start py-2">
+            {{ t('选择语言') }}
+          </div>
+          <SelectRoot
+            :model-value="useStore.settings.lang"
+            @update:model-value="onLangChange"
+          >
+            <SelectTrigger
+              class="inline-flex min-w-[160px] items-center justify-between rounded-lg px-[15px] text-xs leading-none h-[35px] gap-[5px] bg-[#111] text-white text-grass11 hover:bg-[#222] border shadow-sm focus:shadow-[0_0_0_2px] focus:shadow-black outline-none"
+              aria-label="Select language"
+            >
+              <SelectValue :placeholder="t('选择语言')" />
+              <ChevronDown />
+            </SelectTrigger>
+
+            <SelectPortal>
+              <SelectContent
+                class="min-w-[160px] bg-white rounded-lg shadow-sm z-[100]"
+                :side-offset="5"
+              >
+                <SelectViewport class="p-[5px]">
+                  <SelectGroup>
+                    <SelectItem
+                      v-for="option in languageOptions"
+                      :key="option.value"
+                      class="text-xs leading-none text-grass11 rounded-[3px] flex items-center h-[25px] pr-[35px] pl-[25px] relative select-none data-[disabled]:text-mauve8 data-[disabled]:pointer-events-none data-[highlighted]:outline-none data-[highlighted]:bg-green9 data-[highlighted]:text-green1"
+                      :value="option.value"
+                    >
+                      <SelectItemText>
+                        {{ option.name }}
+                      </SelectItemText>
+                    </SelectItem>
+                  </SelectGroup>
+                </SelectViewport>
+              </SelectContent>
+            </SelectPortal>
+          </SelectRoot>
+        </div>
+        <div class="flex items-center justify-between">
+          <div class="text-white text-[14px] text-start py-2">
+            {{ t('退出时动作') }}
+          </div>
           <div class="flex items-center">
             <div
               v-for="radio in radioList"
@@ -43,7 +86,7 @@
                 }"
                 class="relative w-5 h-5 rounded-[50%] border border-solid border-[#333]"
               ></div>
-              <div class="text-white text-[14px] ml-2">{{ radio.name }}</div>
+              <div class="text-white text-[14px] ml-2">{{ t(radio.name) }}</div>
             </div>
           </div>
         </div>
@@ -58,11 +101,27 @@ import MusicLine from '@src/layouts/three-bg/components/music-line.vue'
 import Weather from '@src/layouts/three-bg/components/weather.vue'
 import Video from '@src/layouts/three-bg/components/video.vue'
 import SkullHead from '@src/layouts/three-bg/components/skull-head.vue'
+import { ChevronDown } from '@lucide/vue'
+import { useI18n } from 'vue-i18n'
 import { useUserStore } from '@src/stores/user'
+import { setLocale, type AppLocale } from '@src/i18n'
 
 const useStore = useUserStore()
 
+const { t } = useI18n({ useScope: 'global' })
+
 const isShow = ref<boolean>(false)
+
+/** 语言选项固定显示各语言自身的名称，不参与翻译 */
+const languageOptions: { name: string; value: AppLocale }[] = [
+  { name: '中文', value: 'zh' },
+  { name: 'English', value: 'en' }
+]
+
+/** 切换界面语言：写入 i18n 并持久化到 store，重启后仍生效 */
+const onLangChange = (value: unknown): void => {
+  useStore.settings.lang = setLocale(String(value ?? ''))
+}
 
 // ============ 主题列表横向滚动（滚轮 + 拖拽） ============
 const themeScrollRef = ref<HTMLDivElement | null>(null)

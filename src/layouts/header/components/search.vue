@@ -16,7 +16,7 @@
       </AutocompleteTrigger>
       <AutocompleteInput
         class="w-full outline-none h-full placeholder-[rgba(255,255,255,0.22)] text-white"
-        placeholder="请输入要搜索的歌词、歌手、专辑"
+        :placeholder="t('请输入要搜索的歌词、歌手、专辑')"
         @focus="search"
         @blur="onBlur"
       />
@@ -65,6 +65,9 @@
 import { Search } from '@lucide/vue'
 import { type NeteaseSong } from '@src/utils/netease'
 import { usePlayerStore } from '@src/stores/player'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n({ useScope: 'global' })
 
 /** 搜索结果选项 */
 interface SongOption {
