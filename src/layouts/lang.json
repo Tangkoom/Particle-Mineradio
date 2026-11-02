@@ -87,7 +87,9 @@
     "unit": {
       "minutes": "{value}分钟",
       "tracks": "{value}首"
-    }
+    },
+    "通用设置": "通用设置",
+    "账号设置": "账号设置"
   },
   "en": {
     "未登录": "Not Logged In",
@@ -177,6 +179,8 @@
     "unit": {
       "minutes": "{value} min",
       "tracks": "{value} tracks"
-    }
+    },
+    "通用设置": "General Settings",
+    "账号设置": "Account Settings"
   }
 }

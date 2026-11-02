@@ -11,23 +11,24 @@
             width,
             height
           }"
-          class="rounded-xl dialog-content max-h-80"
+          class="rounded-xl dialog-content max-h-200"
         >
           <div class="flex items-center justify-between p-[10px_8px]">
-            <div class="text-[16px] font-500 text-white">{{ title }}</div>
+            <div class="text-[16px] font-500 text-white pl-[12px]">
+              {{ title }}
+            </div>
             <div class="flex items-center">
               <slot name="close" />
               <div
                 v-if="slotExist('close')"
-                id="common-transparent"
-                class="cursor-pointer w-7 h-7 rounded-lg flex items-center justify-center"
+                class="common-transparent cursor-pointer w-7 h-7 rounded-lg flex items-center justify-center"
                 @click="clear"
               >
                 <X color="white" :size="16" />
               </div>
             </div>
           </div>
-          <div class="w-full h-[calc(100%-36px)]">
+          <div class="w-full h-[calc(100%-48px)]">
             <slot name="content" />
           </div>
         </div>
@@ -91,7 +92,7 @@ const clear = (): void => {
     rgba(24, 23, 26, 0.96),
     rgba(12, 11, 12, 0.92)
   );
-  border: 1px solid rgba(244, 210, 138, 0.16);
+  // border: 1px solid rgba(244, 210, 138, 0.16);
   border-radius: 15px;
   box-shadow:
     0 26px 90px rgba(0, 0, 0, 0.56),

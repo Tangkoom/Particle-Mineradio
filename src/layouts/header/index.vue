@@ -2,6 +2,7 @@
   <div
     class="titlebar relative z-10 h-12 w-full flex items-center justify-between px-2"
     data-tauri-drag-region
+    @contextmenu.prevent
   >
     <Login />
     <ComSearch />
@@ -31,7 +32,7 @@
         <X color="white" :size="16" />
       </div>
     </div>
-    <Setting v-model="showDialog" />
+    <Setting ref="settingRef" />
   </div>
 </template>
 
@@ -48,10 +49,10 @@ import { ensureBridge } from '@src/utils/netease'
 const currentWindow = getCurrentWindow()
 const userStore = useUserStore()
 
-const showDialog = ref<boolean>(false)
+const settingRef = useTemplateRef<InstanceType<typeof Setting>>('settingRef')
 
 const openSetting = (): void => {
-  showDialog.value = true
+  settingRef.value?.openDialog()
 }
 
 // ============ 窗口控制 ============

@@ -1,7 +1,6 @@
 import { createI18n } from 'vue-i18n'
 import messages from '@src/layouts/lang.json'
 
-
 /**
  * 语言包以「中文原文」作为 key（见 src/layouts/lang.json），
  * 因此 zh 词条既是翻译也是兜底值，缺失时 t() 会原样返回中文 key。
@@ -36,6 +35,5 @@ export const setLocale = (locale: string): AppLocale => {
   document.documentElement.lang = next
   return next
 }
-
 
 export default i18n

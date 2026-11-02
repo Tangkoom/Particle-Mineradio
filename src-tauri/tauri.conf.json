@@ -41,9 +41,13 @@
     "windows": {
       "nsis": {
         "installerIcon": "icons/icon.ico",
+        "uninstallerIcon": "icons/icon.ico",
+        "template": "nsis/installer.nsi",
+        "sidebarImage": "nsis/sidebar.bmp",
+        "headerImage": "nsis/header.bmp",
+        "uninstallerHeaderImage": "nsis/header.bmp",
         "languages": ["SimpChinese"],
-        "displayLanguageSelector": false,
-        "startMenuFolder": "Particle-Mineradio"
+        "displayLanguageSelector": false
       },
       "wix": {
         "language": "zh-CN"
