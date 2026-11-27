@@ -283,7 +283,12 @@ pub(crate) fn setup_mode(state: State<'_, SetupMode>) -> String {
 
 #[tauri::command]
 pub(crate) fn suggested_dir() -> String {
-    default_dir().display().to_string()
+    // 已安装过时沿用注册表里的安装位置，避免更新时又装回默认目录。
+    installed_dir()
+        .filter(|dir| dir.join(APP_EXE).is_file())
+        .unwrap_or_else(default_dir)
+        .display()
+        .to_string()
 }
 
 #[tauri::command]
