@@ -28,7 +28,7 @@ use std::os::windows::process::CommandExt;
 pub(crate) const SETUP_WINDOW: &str = "setup";
 const APP_NAME: &str = "Particle-Mineradio";
 const APP_EXE: &str = "Particle-Mineradio.exe";
-const APP_VERSION: &str = "0.1.0";
+const APP_VERSION: &str = env!("CARGO_PKG_VERSION");
 const PUBLISHER: &str = "Particle-Mineradio";
 const UNINSTALL_KEY: &str =
     "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\com.tauri-app.Particle-Mineradio";

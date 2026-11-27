@@ -1,6 +1,6 @@
 [package]
 name = "Particle-Mineradio"
-version = "0.1.0"
+version = "0.1.1"
 description = "Particle Mineradio"
 authors = ["you"]
 edition = "2021"
