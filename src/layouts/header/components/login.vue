@@ -20,13 +20,7 @@
         {{
           userStore.profile?.nickname?.trim() ||
           (userStore.profile
-            ? t(
-                userStore.profile.provider === 'qq'
-                  ? 'QQ音乐'
-                  : userStore.profile.provider === 'jamendo'
-                    ? 'Jamendo'
-                    : '网易云'
-              )
+            ? t(userStore.profile.provider === 'qq' ? 'QQ音乐' : '网易云')
             : t('未登录'))
         }}
       </div>
@@ -60,7 +54,6 @@
               :key="provider.id"
               class="login-platform-tabs relative flex items-center px-2.75"
               :class="{ 'login-platform-active': provider.id === userStore.activeProvider }"
-              @click="onProviderClick(provider.id)"
             >
               <div class="w-4 h-8 border border-solid border-[rgba(255,226,225,.1)] rounded-full flex items-center justify-center">
                 <Menu :size="16" color="rgba(255,226,225,.9)" />
@@ -79,15 +72,9 @@
                   <b class="text-white text-[13px] block truncate">{{ provider.name }}</b>
                   <small
                     class="font-bold text-[10px]"
-                    :class="provider.profile || provider.id === 'jamendo' ? 'text-emerald-400' : 'text-white/35'"
+                    :class="provider.profile ? 'text-emerald-400' : 'text-white/35'"
                   >
-                    {{
-                      provider.id === 'jamendo'
-                        ? t('免登录')
-                        : provider.profile
-                          ? t('已登录')
-                          : t('未登录')
-                    }}
+                    {{ provider.profile ? t('已登录') : t('未登录') }}
                   </small>
                 </div>
                 <small
@@ -100,37 +87,6 @@
                   :title="t('拖到 MR 接入口')"
                   @mousedown.stop.prevent="startConnect($event, provider.id)"
                 ></span>
-              </div>
-            </div>
-
-            <div
-              v-if="showJamendoConfig"
-              class="rounded-xl border border-solid border-white/10 bg-white/[0.035] p-2.5"
-            >
-              <div class="text-[10px] text-white/45 pb-1.5">
-                {{ t('粘贴 Jamendo client_id') }}
-              </div>
-              <input
-                v-model="jamendoIdInput"
-                class="w-full h-7 rounded-lg bg-black/30 border border-solid border-white/10 px-2 text-[11px] text-white/85 outline-none focus:border-white/25"
-                placeholder="client_id"
-                spellcheck="false"
-              />
-              <div class="flex items-center gap-2 pt-2">
-                <button
-                  class="h-6 px-2.5 rounded-md bg-white text-black text-[11px] font-bold cursor-pointer"
-                  @click="saveJamendoId"
-                >
-                  {{ t('保存') }}
-                </button>
-                <a
-                  class="text-[10px] text-white/45 hover:text-white/70"
-                  href="https://devportal.jamendo.com/"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {{ t('获取 client_id') }}
-                </a>
               </div>
             </div>
           </div>
@@ -161,15 +117,7 @@
                 style="box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05)"
                 class="flex items-center p-1.5 mb-2.75 relative rounded-xl border border-solid border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.028)]"
               >
-                <div class="provider-logo">
-                  {{
-                    connectedProvider === 'qq'
-                      ? 'QQ'
-                      : connectedProvider === 'jamendo'
-                        ? 'JM'
-                        : 'NE'
-                  }}
-                </div>
+                <div class="provider-logo">{{ connectedProvider === 'qq' ? 'QQ' : 'NE' }}</div>
                 <b class="font-bold text-white text-[13px] pl-2.75 truncate">
                   {{ connectedName }}
                 </b>
@@ -221,7 +169,6 @@ import {
 } from '@src/utils/provider'
 import { useUserStore } from '@src/stores/user'
 import { usePlayerStore } from '@src/stores/player'
-import { hasJamendoClientId, setJamendoClientId } from '@src/utils/jamendo'
 import { useI18n } from 'vue-i18n'
 
 interface Point {
@@ -240,8 +187,6 @@ const isConnected = ref<boolean>(false)
 const logging = ref<boolean>(false)
 const connectedProvider = ref<MusicProvider>('netease')
 const pendingProvider = ref<MusicProvider>('netease')
-const showJamendoConfig = ref<boolean>(false)
-const jamendoIdInput = ref<string>('')
 
 const providers = computed(() => [
   {
@@ -255,12 +200,6 @@ const providers = computed(() => [
     name: t('QQ音乐'),
     logo: 'QQ',
     profile: userStore.accounts.qq.profile
-  },
-  {
-    id: 'jamendo' as const,
-    name: t('Jamendo'),
-    logo: 'JM',
-    profile: userStore.accounts.jamendo?.profile ?? null
   }
 ])
 
@@ -274,8 +213,7 @@ const flowSvgRef = ref<SVGSVGElement | null>(null)
 const targetPortRef = ref<HTMLElement | null>(null)
 const sourceRefs: Record<MusicProvider, HTMLElement | null> = {
   netease: null,
-  qq: null,
-  jamendo: null
+  qq: null
 }
 
 const setSourceRef = (provider: MusicProvider, el: unknown): void => {
@@ -432,19 +370,10 @@ const activateProvider = async (provider: MusicProvider): Promise<void> => {
   void playerStore.loadAccountPlaying()
 }
 
-const onProviderClick = (provider: MusicProvider): void => {
-  if (provider === 'jamendo') void connectProvider(provider)
-}
-
 /** 连线到某个来源：已登录则直接切源，未登录则打开对应登录窗口 */
 const connectProvider = async (provider: MusicProvider): Promise<void> => {
   if (logging.value) return
-  if (provider === 'jamendo' && !hasJamendoClientId()) {
-    showJamendoConfig.value = true
-    disconnectFlow()
-    return
-  }
-  if (userStore.accounts[provider]?.profile) {
+  if (userStore.accounts[provider].profile) {
     await refreshActiveProfile(provider)
     await activateProvider(provider)
     return
@@ -465,21 +394,10 @@ const handleLogin = async (provider: MusicProvider): Promise<void> => {
     await activateProvider(provider)
   } catch (error) {
     console.log(`${provider} 登录取消或失败`, error)
-    if (error instanceof Error && error.message === 'JAMENDO_CLIENT_ID_MISSING') {
-      showJamendoConfig.value = true
-    }
     disconnectFlow()
   } finally {
     logging.value = false
   }
-}
-
-const saveJamendoId = async (): Promise<void> => {
-  const clientId = jamendoIdInput.value.trim()
-  if (!clientId) return
-  setJamendoClientId(clientId)
-  showJamendoConfig.value = false
-  await connectProvider('jamendo')
 }
 
 /** 退出当前连线账号：只清理这一方，另一方登录态与歌单保持 */
@@ -495,10 +413,8 @@ const handleLogout = async (): Promise<void> => {
     console.log('清除登录态失败', error)
   }
 
-  const other = (['netease', 'qq', 'jamendo'] as MusicProvider[]).find(
-    (item) => item !== provider && userStore.accounts[item]?.profile
-  )
-  if (other) {
+  const other: MusicProvider = provider === 'qq' ? 'netease' : 'qq'
+  if (userStore.accounts[other].profile) {
     userStore.setActiveProvider(other)
     nextTick(() => connectFlow(other))
     await activateProvider(other)
