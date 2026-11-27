@@ -20,7 +20,14 @@ use std::{
 use serde::Serialize;
 use tauri::{AppHandle, Emitter, Manager, State, WebviewUrl, WebviewWindowBuilder, WindowEvent};
 
-use windows::Win32::UI::WindowsAndMessaging::{MessageBoxW, MB_ICONWARNING, MB_OK};
+use windows::{
+    core::PCWSTR,
+    Win32::{
+        Foundation::ERROR_SUCCESS,
+        System::Registry::{RegGetValueW, HKEY_CURRENT_USER, RRF_RT_REG_SZ},
+        UI::WindowsAndMessaging::{MessageBoxW, MB_ICONWARNING, MB_OK},
+    },
+};
 
 #[cfg(windows)]
 use std::os::windows::process::CommandExt;
@@ -104,29 +111,58 @@ fn current_exe() -> PathBuf {
     std::env::current_exe().unwrap_or_else(|_| PathBuf::from(APP_EXE))
 }
 
-fn installed_dir() -> Option<PathBuf> {
-    let key = format!("HKCU\\{UNINSTALL_KEY}");
-    let output = Command::new("reg")
-        .args(["query", &key, "/v", "InstallLocation"])
-        .creation_flags(CREATE_NO_WINDOW)
-        .output()
-        .ok()?;
+fn wide(text: &str) -> Vec<u16> {
+    text.encode_utf16().chain(std::iter::once(0)).collect()
+}
 
-    if !output.status.success() {
+/// 直接读宽字符注册表值，避免 `reg query` 的控制台编码把中文路径读坏。
+fn read_reg_string(name: &str) -> Option<String> {
+    let subkey = wide(UNINSTALL_KEY);
+    let value = wide(name);
+
+    let mut size: u32 = 0;
+    let status = unsafe {
+        RegGetValueW(
+            HKEY_CURRENT_USER,
+            PCWSTR(subkey.as_ptr()),
+            PCWSTR(value.as_ptr()),
+            RRF_RT_REG_SZ,
+            None,
+            None,
+            Some(&mut size),
+        )
+    };
+    if status != ERROR_SUCCESS || size < 2 {
         return None;
     }
 
-    let text = String::from_utf8_lossy(&output.stdout);
-    for line in text.lines() {
-        if line.contains("InstallLocation") {
-            let value = line.split("REG_SZ").nth(1)?.trim();
-            if !value.is_empty() {
-                return Some(PathBuf::from(value));
-            }
-        }
+    let mut buffer = vec![0u16; (size as usize + 1) / 2];
+    let status = unsafe {
+        RegGetValueW(
+            HKEY_CURRENT_USER,
+            PCWSTR(subkey.as_ptr()),
+            PCWSTR(value.as_ptr()),
+            RRF_RT_REG_SZ,
+            None,
+            Some(buffer.as_mut_ptr().cast()),
+            Some(&mut size),
+        )
+    };
+    if status != ERROR_SUCCESS {
+        return None;
     }
 
-    None
+    let len = buffer
+        .iter()
+        .position(|&code| code == 0)
+        .unwrap_or(buffer.len());
+    Some(String::from_utf16_lossy(&buffer[..len]))
+}
+
+fn installed_dir() -> Option<PathBuf> {
+    read_reg_string("InstallLocation")
+        .map(PathBuf::from)
+        .filter(|dir| !dir.as_os_str().is_empty())
 }
 
 fn webview2_present() -> bool {
