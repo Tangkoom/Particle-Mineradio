@@ -52,9 +52,17 @@ const hitEdge = (event: PointerEvent): ResizeDirection | null => {
 
   const { clientX: x, clientY: y } = event
   const horizontal =
-    x < card.left + RESIZE_EDGE ? 'West' : x > card.right - RESIZE_EDGE ? 'East' : ''
+    x < card.left + RESIZE_EDGE
+      ? 'West'
+      : x > card.right - RESIZE_EDGE
+        ? 'East'
+        : ''
   const vertical =
-    y < card.top + RESIZE_EDGE ? 'North' : y > card.bottom - RESIZE_EDGE ? 'South' : ''
+    y < card.top + RESIZE_EDGE
+      ? 'North'
+      : y > card.bottom - RESIZE_EDGE
+        ? 'South'
+        : ''
 
   if (!horizontal && !vertical) return null
   return `${vertical}${horizontal}` as ResizeDirection
@@ -151,6 +159,7 @@ body,
   width: 100%;
   height: 100%;
   overflow: hidden;
+  position: relative;
   border-radius: var(--radius);
   background: #000;
   border: 1px solid rgba(255, 255, 255, 0.07);

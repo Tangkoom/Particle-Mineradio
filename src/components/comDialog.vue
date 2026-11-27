@@ -1,5 +1,5 @@
 <template>
-  <Teleport to="#app">
+  <Teleport to=".window-card">
     <Transition>
       <div
         v-if="show"
