@@ -44,7 +44,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window'
 import { invoke } from '@tauri-apps/api/core'
 import { Minus, X, Square, Settings2 } from '@lucide/vue'
 import { useUserStore } from '@src/stores/user'
-import { ensureBridge } from '@src/utils/netease'
+import { ensureActiveBridge } from '@src/utils/provider'
 
 const currentWindow = getCurrentWindow()
 const userStore = useUserStore()
@@ -78,7 +78,7 @@ const closeApp = async (): Promise<void> => {
 // 启动时若本地保留过登录资料，校验隐藏桥接窗口中的 Cookie 是否仍有效
 onMounted(() => {
   if (userStore.isLoggedIn) {
-    ensureBridge().catch(() => {
+    ensureActiveBridge().catch(() => {
       userStore.clearProfile()
     })
   }

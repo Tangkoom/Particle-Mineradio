@@ -1,11 +1,28 @@
 import { defineStore } from 'pinia'
-import type { NeteaseProfile, NeteasePlaylist } from '@src/utils/netease'
+import type {
+  MusicProvider,
+  NeteasePlaylist,
+  NeteaseProfile
+} from '@src/utils/netease'
+
+interface ProviderAccount {
+  profile: NeteaseProfile | null
+  playlists: NeteasePlaylist[]
+}
+
+const emptyAccount = (): ProviderAccount => ({
+  profile: null,
+  playlists: []
+})
 
 export const useUserStore = defineStore('user', {
   state: () => ({
     borderRadius: '15px' as string,
-    profile: null as NeteaseProfile | null,
-    playlists: [] as NeteasePlaylist[],
+    activeProvider: 'netease' as MusicProvider,
+    accounts: {
+      netease: emptyAccount(),
+      qq: emptyAccount()
+    } as Record<MusicProvider, ProviderAccount>,
     settings: {
       theme: 1 as number,
       exitAction: 0 as number,
@@ -13,26 +30,47 @@ export const useUserStore = defineStore('user', {
     }
   }),
   getters: {
-    isLoggedIn: (state): boolean => state.profile !== null
+    profile: (state): NeteaseProfile | null =>
+      state.accounts[state.activeProvider]?.profile ?? null,
+    playlists: (state): NeteasePlaylist[] =>
+      state.accounts[state.activeProvider]?.playlists ?? [],
+    isLoggedIn(): boolean {
+      return this.profile !== null
+    },
+    accountFor: (state) => {
+      return (provider: MusicProvider): ProviderAccount =>
+        state.accounts[provider] ?? emptyAccount()
+    }
   },
   actions: {
+    setActiveProvider(provider: MusicProvider): void {
+      this.activeProvider = provider
+    },
     setProfile(profile: NeteaseProfile): void {
-      this.profile = profile
+      const account = this.accounts[profile.provider]
+      if (!account) return
+      account.profile = profile
+      this.activeProvider = profile.provider
     },
-    setPlaylists(playlists: NeteasePlaylist[]): void {
-      this.playlists = playlists
+    setPlaylists(playlists: NeteasePlaylist[], provider?: MusicProvider): void {
+      const target = provider ?? this.activeProvider
+      const account = this.accounts[target]
+      if (!account) return
+      account.playlists = playlists
     },
-    clearProfile(): void {
-      this.profile = null
-      this.playlists = []
+    clearProfile(provider?: MusicProvider): void {
+      const target = provider ?? this.activeProvider
+      const account = this.accounts[target]
+      if (!account) return
+      account.profile = null
+      account.playlists = []
     },
     logout(): void {
-      this.profile = null
-      this.playlists = []
+      this.clearProfile()
     }
   },
   persist: {
-    pick: ['profile', 'playlists', 'settings', 'lang'],
+    pick: ['activeProvider', 'accounts', 'settings'],
     storage: localStorage
   }
 })

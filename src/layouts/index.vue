@@ -285,7 +285,10 @@ import { commonlyUsedItem } from './util'
 import dayjs from 'dayjs'
 import { useUserStore } from '@src/stores/user'
 import { usePlayerStore } from '@src/stores/player'
-import { getDailySongs, getRecentSongs } from '@src/utils/netease'
+import {
+  getActiveDailySongs,
+  getActiveRecentSongs
+} from '@src/utils/provider'
 import { useI18n } from 'vue-i18n'
 // import createWindow from '@src/utils/createWindow'
 
@@ -364,7 +367,7 @@ const loadTodayStats = async (): Promise<void> => {
   const profile = userStore.profile
   if (!profile) return
   try {
-    const songs = await getRecentSongs(profile.userId)
+    const songs = await getActiveRecentSongs()
     const totalMs = songs.reduce((sum, s) => sum + (s.duration || 0), 0)
     const minutes = Math.round(totalMs / 60000)
     // 统计出现频次最高的艺人
@@ -395,7 +398,7 @@ const loadTodayStats = async (): Promise<void> => {
 const onClickDaily = async (): Promise<void> => {
   if (!userStore.isLoggedIn) return
   try {
-    const songs = await getDailySongs()
+    const songs = await getActiveDailySongs()
     if (!songs.length) {
       playerStore.error = t('暂无每日推荐歌曲')
       return
@@ -414,7 +417,7 @@ const onClickRecent = async (): Promise<void> => {
   const profile = userStore.profile
   if (!profile) return
   try {
-    const songs = await getRecentSongs(profile.userId)
+    const songs = await getActiveRecentSongs()
     if (!songs.length) {
       playerStore.error = t('暂无最近播放记录')
       return

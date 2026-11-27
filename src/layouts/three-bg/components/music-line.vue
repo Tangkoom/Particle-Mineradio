@@ -5,7 +5,8 @@
 <script setup lang="ts">
 import * as THREE from 'three'
 import { usePlayerStore } from '@src/stores/player'
-import { getLyric, type NeteaseLyricLine } from '@src/utils/netease'
+import type { NeteaseLyricLine, NeteaseSong } from '@src/utils/netease'
+import { getActiveLyric } from '@src/utils/provider'
 
 /**
  * 音频可视化 + 3D 歌词
@@ -32,7 +33,7 @@ let lyricGroup: THREE.Group
 let bars: THREE.Mesh[] = []
 let lyricMeshes: THREE.Mesh[] = []
 let lyricLines: NeteaseLyricLine[] = []
-let lastSongId: number | null = null
+let lastSongId: string | null = null
 let rafId: number | null = null
 let resizeObserver: ResizeObserver | null = null
 /** 滚轮手动滚动歌词偏移（正=向下滚、内容上滚 / 歌词上移） */
@@ -245,9 +246,9 @@ const onResize = (): void => {
 }
 
 /** 拉取当前歌曲歌词并生成 mesh */
-const loadLyrics = async (songId: number): Promise<void> => {
+const loadLyrics = async (song: NeteaseSong): Promise<void> => {
   try {
-    lyricLines = await getLyric(songId)
+    lyricLines = await getActiveLyric(song)
   } catch {
     lyricLines = []
   }
@@ -301,10 +302,13 @@ const animate = (): void => {
   let realAllZero = false
 
   // 歌曲变化时拉取歌词（替代 watch，零额外开销）
-  const songId = playerStore.current?.id
-  if (songId && songId !== lastSongId) {
-    lastSongId = songId
-    void loadLyrics(songId)
+  const currentSong = playerStore.current
+  const songKey = currentSong
+    ? `${currentSong.provider}:${currentSong.mid || currentSong.id}`
+    : ''
+  if (songKey && songKey !== lastSongId) {
+    lastSongId = songKey
+    void loadLyrics(currentSong!)
   }
 
   // 仅在播放中或 analyser 尚未初始化时同步分析器，避免每帧重复调用
@@ -387,9 +391,9 @@ onMounted(() => {
   if (playerStore.isPlaying) ensureAnalyser()
   // 首次挂载时若已有当前歌曲，立即拉歌词
   const cur = playerStore.current
-  if (cur?.id) {
-    lastSongId = cur.id
-    void loadLyrics(cur.id)
+  if (cur?.id || cur?.mid) {
+    lastSongId = `${cur.provider}:${cur.mid || cur.id}`
+    void loadLyrics(cur)
   }
   rafId = requestAnimationFrame(animate)
 })

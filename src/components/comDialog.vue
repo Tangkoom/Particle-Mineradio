@@ -1,9 +1,10 @@
 <template>
-  <Teleport to=".window-card">
+  <Teleport to="#app">
     <Transition>
       <div
         v-if="show"
-        class="absolute inset-0 z-50 bg-[rgba(0,0,0,0.5)] flex items-center justify-center"
+        class="absolute z-50 bg-[rgba(0,0,0,0.5)] flex items-center justify-center rounded-[var(--radius)] overflow-hidden"
+        style="inset: var(--shadow-gap)"
         @click.self="close"
       >
         <div

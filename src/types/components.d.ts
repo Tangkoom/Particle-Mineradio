@@ -19,7 +19,6 @@ declare module 'vue' {
     AutocompleteItem: typeof import('reka-ui')['AutocompleteItem']
     AutocompleteLabel: typeof import('reka-ui')['AutocompleteLabel']
     AutocompleteRoot: typeof import('reka-ui')['AutocompleteRoot']
-    AutocompleteSeparator: typeof import('reka-ui')['AutocompleteSeparator']
     AutocompleteTrigger: typeof import('reka-ui')['AutocompleteTrigger']
     AutocompleteViewport: typeof import('reka-ui')['AutocompleteViewport']
     AvatarImage: typeof import('reka-ui')['AvatarImage']
@@ -40,7 +39,5 @@ declare module 'vue' {
     SelectTrigger: typeof import('reka-ui')['SelectTrigger']
     SelectValue: typeof import('reka-ui')['SelectValue']
     SelectViewport: typeof import('reka-ui')['SelectViewport']
-    SwitchRoot: typeof import('reka-ui')['SwitchRoot']
-    SwitchThumb: typeof import('reka-ui')['SwitchThumb']
   }
 }

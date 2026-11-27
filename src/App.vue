@@ -172,6 +172,10 @@ html.is-maximized .window-shell {
   padding: 0;
 }
 
+html.is-maximized #app {
+  --shadow-gap: 0px;
+}
+
 html.is-maximized .window-card {
   border-radius: 0;
   border: 0;

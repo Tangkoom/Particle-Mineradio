@@ -1,11 +1,13 @@
 import { defineStore } from 'pinia'
 import {
-  getSongUrl,
-  getRecentSongs,
   type NeteaseSong,
   type NeteaseQuality,
   DEFAULT_QUALITY
 } from '@src/utils/netease'
+import {
+  getActiveRecentSongs,
+  getActiveSongUrl
+} from '@src/utils/provider'
 import { useUserStore } from '@src/stores/user'
 
 /** 全局唯一的音频元素（无需挂到组件上） */
@@ -202,7 +204,7 @@ export const usePlayerStore = defineStore('player', {
       const el = this.ensureAudio()
       this.loading = true
       try {
-        const url = await getSongUrl(song.id, this.quality)
+        const url = await getActiveSongUrl(song, this.quality)
         lastUrl = url
         el.src = url
         // 在用户手势调用链中同步确保分析链路（幂等），
@@ -337,11 +339,15 @@ export const usePlayerStore = defineStore('player', {
      */
     async loadAccountPlaying(): Promise<void> {
       const userStore = useUserStore()
-      const profile = userStore.profile
-      if (!profile) return
+      if (!userStore.profile) return
       try {
-        const songs = await getRecentSongs(profile.userId)
-        if (!songs.length) return
+        const songs = await getActiveRecentSongs()
+        if (!songs.length) {
+          this.queue = []
+          this.queueIndex = -1
+          this.current = null
+          return
+        }
         this.queue = songs
         this.queueIndex = 0
         this.current = songs[0]

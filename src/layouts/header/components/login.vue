@@ -17,7 +17,12 @@
         <User v-else color="rgba(255,255,255,0.8)" :size="18" />
       </AvatarRoot>
       <div class="text-white text-[12px] px-2 truncate">
-        {{ userStore.profile?.nickname || t('未登录') }}
+        {{
+          userStore.profile?.nickname?.trim() ||
+          (userStore.profile
+            ? t(userStore.profile.provider === 'qq' ? 'QQ音乐' : '网易云')
+            : t('未登录'))
+        }}
       </div>
     </div>
     <ComDialog v-model="isShow" isClose width="520px">
@@ -28,7 +33,7 @@
           :class="{ 'opacity-40 pointer-events-none': !userStore.isLoggedIn }"
           @click="handleLogout"
         >
-          {{ t('退出登录') }}
+          {{ t('退出当前账号') }}
         </div>
         <div
           id="common-transparent"
@@ -39,49 +44,54 @@
         </div>
       </template>
       <template #content>
-        <div ref="flowContainerRef" class="pb-5 flex justify-around relative">
-          <div>
-            <div class="login-platform-tabs relative flex items-center px-2.75">
-              <div
-                class="w-4 h-8 border border-solid border-[rgba(255,226,225,.1)] rounded-full flex items-center justify-center"
-              >
+        <div
+          ref="flowContainerRef"
+          class="pb-5 px-1 flex justify-around relative min-h-[228px]"
+        >
+          <div class="flex flex-col gap-3 w-59">
+            <div
+              v-for="provider in providers"
+              :key="provider.id"
+              class="login-platform-tabs relative flex items-center px-2.75"
+              :class="{ 'login-platform-active': provider.id === userStore.activeProvider }"
+            >
+              <div class="w-4 h-8 border border-solid border-[rgba(255,226,225,.1)] rounded-full flex items-center justify-center">
                 <Menu :size="16" color="rgba(255,226,225,.9)" />
               </div>
-              <div class="flex items-center justify-center pl-2.75">
-                <div>
-                  <span
-                    v-if="!userStore.profile?.avatarUrl"
-                    class="provider-logo"
-                    >NE</span
-                  >
+              <div class="flex items-center justify-center pl-2.75 min-w-0 flex-1">
+                <div class="shrink-0">
                   <img
-                    v-else
-                    :src="userStore.profile?.avatarUrl"
+                    v-if="provider.profile?.avatarUrl"
+                    :src="provider.profile.avatarUrl"
                     alt=""
-                    class="w-7.75 h-7.75 rounded-[10px]"
+                    class="w-7.75 h-7.75 rounded-[10px] object-cover"
                   />
+                  <span v-else class="provider-logo">{{ provider.logo }}</span>
                 </div>
-                <b class="text-white pl-2.75">{{ t('网易云') }}</b>
-                <small class="text-yellow-500 font-bold pl-2.75">VIP</small>
-                <SwitchRoot
-                  id="airplane-mode"
-                  v-model="switchState"
-                  class="ml-2.75 w-8 h-5 shadow-sm flex data-[state=unchecked]:bg-stone-300 data-[state=checked]:bg-stone-800 dark:data-[state=unchecked]:bg-stone-800 dark:data-[state=checked]:bg-stone-700 border border-stone-300 data-[state=checked]:border-stone-700 dark:border-stone-700 rounded-full relative transition-[background] focus-within:outline-none focus-within:shadow-[0_0_0_1px] focus-within:border-stone-800 focus-within:shadow-stone-800"
-                >
-                  <SwitchThumb
-                    class="w-3.5 h-3.5 my-auto bg-white text-xs flex items-center justify-center shadow-xl rounded-full transition-transform translate-x-0.5 will-change-transform data-[state=checked]:translate-x-full"
-                  />
-                </SwitchRoot>
+                <div class="pl-2.75 min-w-0">
+                  <b class="text-white text-[13px] block truncate">{{ provider.name }}</b>
+                  <small
+                    class="font-bold text-[10px]"
+                    :class="provider.profile ? 'text-emerald-400' : 'text-white/35'"
+                  >
+                    {{ provider.profile ? t('已登录') : t('未登录') }}
+                  </small>
+                </div>
+                <small
+                  v-if="provider.profile?.vipType"
+                  class="text-yellow-500 font-bold pl-2.75"
+                >VIP</small>
                 <span
-                  ref="sourcePortRef"
+                  :ref="(el) => setSourceRef(provider.id, el)"
                   class="flow-port -right-1.5"
                   :title="t('拖到 MR 接入口')"
-                  @mousedown.stop.prevent="startConnect"
+                  @mousedown.stop.prevent="startConnect($event, provider.id)"
                 ></span>
               </div>
             </div>
           </div>
-          <div class="login-platform-tabs w-50 relative p-4 box-border">
+
+          <div class="login-platform-tabs w-50 relative p-4">
             <span
               ref="targetPortRef"
               class="flow-port -left-1.5"
@@ -94,13 +104,11 @@
             <div class="flex items-center pb-2.75">
               <div class="login-node-orb w-10! h-10!">MR</div>
               <div class="pl-2.75">
-                <div
-                  class="text-[rgba(255,255,255,.92)] text-[13px] font-bold text-start"
-                >
+                <div class="text-[rgba(255,255,255,.92)] text-[13px] font-bold text-start">
                   MR
                 </div>
                 <div class="text-[rgba(255,255,255,.43)] text-[10px]">
-                  {{ t('等待接入') }}
+                  {{ isConnected ? t('已接入') : t('等待接入') }}
                 </div>
               </div>
             </div>
@@ -109,19 +117,22 @@
                 style="box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05)"
                 class="flex items-center p-1.5 mb-2.75 relative rounded-xl border border-solid border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.028)]"
               >
-                <div class="provider-logo">QR</div>
-                <b class="font-bold text-white text-[13px] pl-2.75">
-                  {{ logging ? t('登录中…') : t('扫码登录') }}
+                <div class="provider-logo">{{ connectedProvider === 'qq' ? 'QQ' : 'NE' }}</div>
+                <b class="font-bold text-white text-[13px] pl-2.75 truncate">
+                  {{ connectedName }}
                 </b>
               </div>
               <div
-                class="flex items-center p-1.5 mb-2.75 relative rounded-xl border border-solid border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.028)]"
+                class="flex items-center p-1.5 relative rounded-xl border border-solid border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.028)]"
               >
-                <div class="provider-logo">CK</div>
-                <b class="font-bold text-white text-[13px] pl-2.75">Cookie</b>
+                <div class="provider-logo">SRC</div>
+                <b class="font-bold text-white text-[13px] pl-2.75">
+                  {{ t('搜索源跟随连线') }}
+                </b>
               </div>
             </div>
           </div>
+
           <svg
             ref="flowSvgRef"
             class="flow-svg"
@@ -149,23 +160,16 @@
 
 <script setup lang="ts">
 import { Menu, User, X } from '@lucide/vue'
+import type { MusicProvider, NeteaseProfile } from '@src/utils/netease'
 import {
-  loginWithNetease,
-  logoutNetease,
-  getUserPlaylists,
-  type NeteaseSong
-} from '@src/utils/netease'
+  getActiveUserPlaylists,
+  loginWithProvider,
+  logoutProvider
+} from '@src/utils/provider'
 import { useUserStore } from '@src/stores/user'
 import { usePlayerStore } from '@src/stores/player'
 import { useI18n } from 'vue-i18n'
 
-/** 搜索结果选项 */
-interface SongOption {
-  name: string
-  song: NeteaseSong
-}
-
-/** 坐标点 */
 interface Point {
   x: number
   y: number
@@ -180,14 +184,40 @@ const isShow = ref<boolean>(false)
 const isConnecting = ref<boolean>(false)
 const isConnected = ref<boolean>(false)
 const logging = ref<boolean>(false)
-const switchState = ref<boolean>(false)
+const connectedProvider = ref<MusicProvider>('netease')
+const pendingProvider = ref<MusicProvider>('netease')
 
-const options = ref<{ name: string; children: SongOption[] }[]>([])
+const providers = computed(() => [
+  {
+    id: 'netease' as const,
+    name: t('网易云'),
+    logo: 'NE',
+    profile: userStore.accounts.netease.profile
+  },
+  {
+    id: 'qq' as const,
+    name: t('QQ音乐'),
+    logo: 'QQ',
+    profile: userStore.accounts.qq.profile
+  }
+])
+
+const connectedName = computed(() => {
+  const p = providers.value.find((item) => item.id === connectedProvider.value)
+  return p?.profile?.nickname?.trim() || p?.name || t('未连接')
+})
 
 // ============ 节点连线 ============
 const flowSvgRef = ref<SVGSVGElement | null>(null)
-const sourcePortRef = ref<HTMLElement | null>(null)
 const targetPortRef = ref<HTMLElement | null>(null)
+const sourceRefs: Record<MusicProvider, HTMLElement | null> = {
+  netease: null,
+  qq: null
+}
+
+const setSourceRef = (provider: MusicProvider, el: unknown): void => {
+  sourceRefs[provider] = (el as HTMLElement | null) ?? null
+}
 
 const tempLine = ref<{ x1: number; y1: number; x2: number; y2: number } | null>(
   null
@@ -217,7 +247,6 @@ const bezierArcPath = (
   const dx = Math.max(1, Math.abs(x2 - x1))
   const offset = dx * 0.5
   const arc = Math.min(22, dx * 0.14)
-  // 首端控制点向上、尾端控制点向下，形成与点位近平行的反 S 形
   return `M ${x1} ${y1} C ${x1 + offset} ${y1 - arc}, ${x2 - offset} ${
     y2 + arc
   }, ${x2} ${y2}`
@@ -243,9 +272,11 @@ const onConnectMove = (e: MouseEvent): void => {
   }
 }
 
-const startConnect = (e: MouseEvent): void => {
-  if (!sourcePortRef.value || !flowSvgRef.value) return
-  const start = getCenterInSvg(sourcePortRef.value)
+const startConnect = (e: MouseEvent, provider: MusicProvider): void => {
+  const source = sourceRefs[provider]
+  if (!source || !flowSvgRef.value) return
+  pendingProvider.value = provider
+  const start = getCenterInSvg(source)
   const svgRect = flowSvgRef.value.getBoundingClientRect()
   isConnecting.value = true
   tempLine.value = {
@@ -264,7 +295,6 @@ const onConnectEnd = (e: MouseEvent): void => {
   if (!isConnecting.value) return
   isConnecting.value = false
 
-  // 判断鼠标是否落在目标端口上
   let hitTarget = false
   if (targetPortRef.value) {
     const rect = targetPortRef.value.getBoundingClientRect()
@@ -278,18 +308,8 @@ const onConnectEnd = (e: MouseEvent): void => {
     }
   }
 
-  if (hitTarget && sourcePortRef.value && targetPortRef.value) {
-    const start = getCenterInSvg(sourcePortRef.value)
-    const end = getCenterInSvg(targetPortRef.value)
-    connections.value = [
-      ...connections.value,
-      {
-        id: connectionSeq++,
-        path: bezierArcPath(start.x, start.y, end.x, end.y)
-      }
-    ]
-    isConnected.value = true
-    handleLogin()
+  if (hitTarget) {
+    void connectProvider(pendingProvider.value)
   }
 
   tempLine.value = null
@@ -297,9 +317,11 @@ const onConnectEnd = (e: MouseEvent): void => {
 
 const openDialog = (): void => {
   isShow.value = true
-  // 已登录则打开弹窗后自动连线
+  // 打开弹窗时，把当前使用中的账号重新连上
   if (userStore.isLoggedIn) {
-    nextTick(() => connectFlow())
+    nextTick(() => connectFlow(userStore.activeProvider))
+  } else {
+    disconnectFlow()
   }
 }
 
@@ -307,20 +329,20 @@ const close = (): void => {
   isShow.value = false
 }
 
-/** 根据当前 DOM 坐标绘制一条连接线（已连接时不重复添加） */
-const connectFlow = (): void => {
-  if (isConnected.value) return
-  if (!sourcePortRef.value || !targetPortRef.value || !flowSvgRef.value) return
-  const start = getCenterInSvg(sourcePortRef.value)
+/** 根据当前 DOM 坐标绘制一条连接线（切换来源时重建） */
+const connectFlow = (provider: MusicProvider): void => {
+  const source = sourceRefs[provider]
+  if (!source || !targetPortRef.value || !flowSvgRef.value) return
+  const start = getCenterInSvg(source)
   const end = getCenterInSvg(targetPortRef.value)
   connections.value = [
-    ...connections.value,
     {
       id: connectionSeq++,
       path: bezierArcPath(start.x, start.y, end.x, end.y)
     }
   ]
   isConnected.value = true
+  connectedProvider.value = provider
 }
 
 const disconnectFlow = (): void => {
@@ -328,44 +350,72 @@ const disconnectFlow = (): void => {
   isConnected.value = false
 }
 
-/** 打开网易云登录窗口，登录成功后保存用户信息并拉取歌单与最近播放 */
-const handleLogin = async (): Promise<void> => {
-  if (logging.value || userStore.isLoggedIn) return
+/** 切换当前使用的音乐源，并重新拉取该账号的歌单 / 最近播放 */
+const activateProvider = async (provider: MusicProvider): Promise<void> => {
+  if (userStore.activeProvider !== provider) {
+    playerStore.stop()
+    userStore.setActiveProvider(provider)
+    userStore.setPlaylists([], provider)
+  }
+  connectFlow(provider)
+  try {
+    const profile = userStore.profile
+    const songs = await getActiveUserPlaylists(profile?.userId)
+    userStore.setPlaylists(songs, provider)
+  } catch (error) {
+    console.log('获取歌单列表失败', error)
+    userStore.setPlaylists([], provider)
+  }
+  void playerStore.loadAccountPlaying()
+}
+
+/** 连线到某个来源：已登录则直接切源，未登录则打开对应登录窗口 */
+const connectProvider = async (provider: MusicProvider): Promise<void> => {
+  if (logging.value) return
+  if (userStore.accounts[provider].profile) {
+    await activateProvider(provider)
+    return
+  }
+  await handleLogin(provider)
+}
+
+/** 打开对应平台登录窗口，登录成功后保存用户信息并拉取歌单与最近播放 */
+const handleLogin = async (provider: MusicProvider): Promise<void> => {
+  if (logging.value) return
   logging.value = true
   try {
-    const profile = await loginWithNetease()
+    const profile: NeteaseProfile = await loginWithProvider(provider)
     userStore.setProfile(profile)
-    // 登录成功后连线
-    connectFlow()
-    // 登录成功后用 Cookie 拉取用户歌单列表
-    try {
-      const playlists = await getUserPlaylists(profile.userId)
-      userStore.setPlaylists(playlists)
-    } catch (error) {
-      console.log('获取歌单列表失败', error)
-      userStore.setPlaylists([])
-    }
-    // 同步最近播放到 bottom-bar：填充 queue/current 让播放按钮可直接点击播放
-    void playerStore.loadAccountPlaying()
+    playerStore.stop()
+    userStore.setActiveProvider(provider)
+    connectFlow(provider)
+    await activateProvider(provider)
   } catch (error) {
-    console.log('网易云登录取消或失败', error)
+    console.log(`${provider} 登录取消或失败`, error)
     disconnectFlow()
   } finally {
     logging.value = false
   }
 }
 
-/** 退出登录：停止播放、清除登录态与 WebView Cookie */
+/** 退出当前连线账号：只清理这一方，另一方登录态与歌单保持 */
 const handleLogout = async (): Promise<void> => {
   if (!userStore.isLoggedIn) return
+  const provider = userStore.activeProvider
   disconnectFlow()
   playerStore.stop()
-  userStore.clearProfile()
-  options.value = []
+  userStore.clearProfile(provider)
   try {
-    await logoutNetease()
+    await logoutProvider(provider)
   } catch (error) {
-    console.log('清除网易云登录态失败', error)
+    console.log('清除登录态失败', error)
+  }
+
+  const other: MusicProvider = provider === 'qq' ? 'netease' : 'qq'
+  if (userStore.accounts[other].profile) {
+    userStore.setActiveProvider(other)
+    nextTick(() => connectFlow(other))
+    await activateProvider(other)
   }
 }
 </script>
@@ -391,7 +441,7 @@ const handleLogout = async (): Promise<void> => {
 
 .login-platform-tabs {
   height: auto;
-  min-height: 46px;
+  min-height: 52px;
   border-radius: 13px;
   border-color: rgba(255, 255, 255, 0.05);
   background: linear-gradient(
@@ -409,6 +459,17 @@ const handleLogout = async (): Promise<void> => {
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.12),
     0 0 12px rgba(255, 255, 255, 0.13);
+}
+
+.login-platform-active {
+  background: linear-gradient(
+    90deg,
+    rgba(var(--fc-accent-rgb), 0.12),
+    rgba(255, 255, 255, 0.02)
+  );
+  box-shadow:
+    inset 0 0 0 1px rgba(var(--fc-accent-rgb), 0.32),
+    0 0 18px rgba(var(--fc-accent-rgb), 0.12);
 }
 
 .flow-port {

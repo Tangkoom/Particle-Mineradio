@@ -74,11 +74,11 @@
 <script setup lang="ts">
 import { LoaderCircle } from '@lucide/vue'
 import { usePlayerStore, formatPlayTime } from '@src/stores/player'
-import {
-  getPlaylistSongs,
-  type NeteasePlaylist,
-  type NeteaseSong
+import type {
+  NeteasePlaylist,
+  NeteaseSong
 } from '@src/utils/netease'
+import { getActivePlaylistSongs } from '@src/utils/provider'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n({ useScope: 'global' })
@@ -170,7 +170,7 @@ const loadSongs = async (): Promise<void> => {
     if (props.songs && props.songs.length) {
       musicList.value = props.songs
     } else if (props.playlist) {
-      musicList.value = await getPlaylistSongs(props.playlist.id)
+      musicList.value = await getActivePlaylistSongs(props.playlist)
     } else {
       musicList.value = []
     }

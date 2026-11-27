@@ -62,7 +62,8 @@
 <script setup lang="ts">
 import { useUserStore } from '@src/stores/user'
 import { usePlayerStore } from '@src/stores/player'
-import { getPlaylistSongs, type NeteasePlaylist } from '@src/utils/netease'
+import type { NeteasePlaylist } from '@src/utils/netease'
+import { getActivePlaylistSongs } from '@src/utils/provider'
 import { AudioLines, Play, LoaderCircle } from '@lucide/vue'
 import { useI18n } from 'vue-i18n'
 
@@ -90,7 +91,7 @@ const onPlayPlaylist = async (playlist: NeteasePlaylist): Promise<void> => {
   if (loadingPlaylistId.value !== null) return
   loadingPlaylistId.value = playlist.id
   try {
-    const songs = await getPlaylistSongs(playlist.id)
+    const songs = await getActivePlaylistSongs(playlist)
     if (!songs.length) {
       playerStore.error = `歌单「${playlist.name}」暂无可播放歌曲`
       return

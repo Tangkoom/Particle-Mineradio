@@ -22,29 +22,41 @@ const BRIDGE_LABEL = 'api-bridge'
 /** 回传事件名 */
 const ACCOUNT_EVENT = 'mr::netease::account'
 
+export type MusicProvider = 'netease' | 'qq'
+
 export interface NeteaseProfile {
+  provider: MusicProvider
   userId: number
   nickname: string
   avatarUrl: string
   vipType: number
+  playbackKeyReady?: boolean
 }
 
 export interface NeteaseSong {
+  provider: MusicProvider
   id: number
   name: string
   artist: string
   album: string
   duration: number
   coverUrl: string
+  /** QQ 音乐歌曲 MID（网易云为空） */
+  mid?: string
+  /** QQ 音乐实际音频 MID（file.media_mid） */
+  mediaMid?: string
 }
 
-/** 网易云歌单元信息 */
+/** 歌单元信息 */
 export interface NeteasePlaylist {
+  provider: MusicProvider
   id: number
   name: string
   coverImgUrl: string
   trackCount: number
   playCount: number
+  /** QQ 音乐歌单目录号（“我喜欢”为 201） */
+  dirid?: number
 }
 
 /** 网易云音质等级：对应 v1 接口的 level 参数 */
@@ -174,6 +186,7 @@ function normalizeProfile(data: any): NeteaseProfile | null {
   const profile = data?.profile
   if (!profile?.userId) return null
   return {
+    provider: 'netease',
     userId: profile.userId,
     nickname: profile.nickname ?? '网易云用户',
     avatarUrl: toHttps(profile.avatarUrl ?? ''),
@@ -191,6 +204,7 @@ function normalizeSong(raw: any): NeteaseSong {
         ? [raw.artist]
         : []
   return {
+    provider: 'netease',
     id: raw.id,
     name: raw.name ?? '未知歌曲',
     artist: artists
@@ -498,6 +512,7 @@ export async function getUserPlaylists(
   }
   const list: any[] = data?.playlist ?? []
   return list.map((p) => ({
+    provider: 'netease',
     id: p.id,
     name: p.name ?? '未知歌单',
     coverImgUrl: toHttps(p.coverImgUrl ?? ''),
@@ -629,8 +644,15 @@ export async function getLyric(songId: number): Promise<NeteaseLyricLine[]> {
   return lines
 }
 
-/** 退出登录：关闭桥接 / 登录窗口并清空 WebView2 浏览数据（含 HttpOnly MUSIC_U） */
+/** 退出登录：只清理网易云自己的会话，避免把 QQ 音乐的登录态一起清空 */
 export async function logoutNetease(): Promise<void> {
+  // 先让服务端失效 MUSIC_U；只调用 logout，不触碰全量浏览数据
+  try {
+    await requestFromWindow(BRIDGE_LABEL, 'POST', '/api/logout')
+  } catch {
+    /* 未登录或桥接窗口已关闭时忽略 */
+  }
+
   bridgePromise = null
   try {
     await bridgeWin?.close()
@@ -645,6 +667,4 @@ export async function logoutNetease(): Promise<void> {
   } catch {
     /* ignore */
   }
-
-  await invoke('plugin:webview|clear_all_browsing_data')
 }

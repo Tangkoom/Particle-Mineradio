@@ -1,0 +1,15 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "qq-remote",
+  "description": "允许 QQ 音乐登录窗口与隐藏 API 桥接窗口把请求结果以事件形式回传给主窗口",
+  "remote": {
+    "urls": [
+      "https://y.qq.com/*",
+      "https://c.y.qq.com/*",
+      "https://u.y.qq.com/*",
+      "https://*.qq.com/*"
+    ]
+  },
+  "windows": ["qq-login", "qq-api-bridge"],
+  "permissions": ["core:event:allow-emit", "core:event:allow-emit-to"]
+}

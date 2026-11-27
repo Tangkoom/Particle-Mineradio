@@ -79,7 +79,8 @@
 
 <script setup lang="ts">
 import { Search } from '@lucide/vue'
-import { searchSongs, type NeteaseSong } from '@src/utils/netease'
+import { searchActiveSongs } from '@src/utils/provider'
+import type { NeteaseSong } from '@src/utils/netease'
 import { usePlayerStore } from '@src/stores/player'
 import { useI18n } from 'vue-i18n'
 
@@ -132,7 +133,7 @@ const runSearch = async (value: string): Promise<void> => {
   loading.value = true
   error.value = ''
   try {
-    const songs = await searchSongs(value)
+    const songs = await searchActiveSongs(value)
     if (current !== requestId) return
     options.value = songs.length
       ? [
