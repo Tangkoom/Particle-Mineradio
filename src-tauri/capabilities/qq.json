@@ -11,5 +11,5 @@
     ]
   },
   "windows": ["qq-login", "qq-api-bridge"],
-  "permissions": ["core:event:allow-emit", "core:event:allow-emit-to"]
+  "permissions": ["core:window:default", "core:event:default"]
 }
