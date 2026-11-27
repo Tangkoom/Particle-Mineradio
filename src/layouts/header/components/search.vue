@@ -6,9 +6,9 @@
   >
     <AutocompleteAnchor
       id="common-transparent"
-      class="window-controls relative rounded-4xl min-w-85 w-full inline-flex items-center justify-between px-3.75 text-xs h-8.75 gap-1.25 transform transition-all duration-300 ease-in-out"
+      class="window-controls relative rounded-4xl min-w-85 w-full inline-flex items-center justify-between px-3.75 text-xs h-8.75 gap-1.25 border border-white/10"
       :class="{
-        'translate-y-2 z-999': isFocus
+        'z-999': isFocus
       }"
     >
       <AutocompleteTrigger>
@@ -24,40 +24,34 @@
       />
     </AutocompleteAnchor>
     <AutocompleteContent
-      id="common-transparent"
-      class="absolute z-999 w-full mt-3 bg-white overflow-hidden rounded-lg"
+      class="absolute left-0 right-0 top-full z-999 mt-2 overflow-hidden rounded-2xl border border-white/10 bg-[#141519]/95 shadow-[0_18px_50px_rgba(0,0,0,0.55)] backdrop-blur-2xl"
     >
-      <AutocompleteViewport class="p-1.25 max-h-80 overflow-y-auto overscroll-contain">
+      <AutocompleteViewport class="max-h-80 overflow-y-auto overscroll-contain p-1.5">
         <div
           v-if="loading"
-          class="text-mauve8 text-xs font-medium text-center py-2"
+          class="px-3 py-3 text-center text-xs font-medium text-white/45"
         >
           搜索中…
         </div>
 
         <div
           v-else-if="error"
-          class="text-red-500 text-xs font-medium text-center py-2 px-3"
+          class="px-3 py-3 text-center text-xs font-medium text-red-400"
         >
           {{ error }}
         </div>
 
         <AutocompleteEmpty
           v-else-if="!options.length"
-          class="text-mauve8 text-xs font-medium text-center py-2"
+          class="px-3 py-3 text-center text-xs font-medium text-white/45"
         >
           没有找到相关歌曲
         </AutocompleteEmpty>
 
-        <template v-for="(group, index) in options" :key="group.name">
+        <template v-for="group in options" :key="group.name">
           <AutocompleteGroup>
-            <AutocompleteSeparator
-              v-if="index !== 0"
-              class="h-px bg-grass6 m-1.25"
-            />
-
             <AutocompleteLabel
-              class="px-6.25 text-xs leading-6.25 text-mauve11"
+              class="px-10 pb-1 pt-2 text-[11px] font-medium tracking-wide text-white/40"
             >
               {{ group.name }}
             </AutocompleteLabel>
@@ -66,13 +60,13 @@
               v-for="option in group.children"
               :key="option.song.id"
               :value="option.name"
-              class="text-xs leading-none text-grass11 rounded-[3px] flex items-center gap-2 h-6.25 pr-8.75 pl-6.25 relative select-none data-disabled:text-mauve8 data-disabled:pointer-events-none data-highlighted:outline-none data-highlighted:bg-grass9 data-highlighted:text-grass1"
+              class="flex cursor-pointer select-none items-center gap-3 rounded-xl py-2.5 pl-10 pr-3 text-[13px] leading-none text-white/85 outline-none transition-colors data-disabled:pointer-events-none data-disabled:text-white/25 data-highlighted:bg-white/10 data-highlighted:text-white"
               @select="onSelectSong(option)"
             >
-              <span class="truncate">
+              <span class="min-w-0 flex-1 truncate">
                 {{ option.name }}
               </span>
-              <span class="text-[10px] text-mauve9 truncate">
+              <span class="max-w-[45%] shrink-0 truncate text-[11px] text-white/40">
                 {{ option.song.artist }}
               </span>
             </AutocompleteItem>
