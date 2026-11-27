@@ -21,7 +21,8 @@ export const useUserStore = defineStore('user', {
     activeProvider: 'netease' as MusicProvider,
     accounts: {
       netease: emptyAccount(),
-      qq: emptyAccount()
+      qq: emptyAccount(),
+      jamendo: emptyAccount()
     } as Record<MusicProvider, ProviderAccount>,
     settings: {
       theme: 1 as number,
@@ -47,21 +48,20 @@ export const useUserStore = defineStore('user', {
       this.activeProvider = provider
     },
     setProfile(profile: NeteaseProfile): void {
-      const account = this.accounts[profile.provider]
-      if (!account) return
+      const account =
+        this.accounts[profile.provider] ??
+        (this.accounts[profile.provider] = emptyAccount())
       account.profile = profile
       this.activeProvider = profile.provider
     },
     setPlaylists(playlists: NeteasePlaylist[], provider?: MusicProvider): void {
       const target = provider ?? this.activeProvider
-      const account = this.accounts[target]
-      if (!account) return
+      const account = this.accounts[target] ?? (this.accounts[target] = emptyAccount())
       account.playlists = playlists
     },
     clearProfile(provider?: MusicProvider): void {
       const target = provider ?? this.activeProvider
-      const account = this.accounts[target]
-      if (!account) return
+      const account = this.accounts[target] ?? (this.accounts[target] = emptyAccount())
       account.profile = null
       account.playlists = []
     },

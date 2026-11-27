@@ -22,7 +22,7 @@ const BRIDGE_LABEL = 'api-bridge'
 /** 回传事件名 */
 const ACCOUNT_EVENT = 'mr::netease::account'
 
-export type MusicProvider = 'netease' | 'qq'
+export type MusicProvider = 'netease' | 'qq' | 'jamendo'
 
 export interface NeteaseProfile {
   provider: MusicProvider
@@ -45,6 +45,8 @@ export interface NeteaseSong {
   mid?: string
   /** QQ 音乐实际音频 MID（file.media_mid） */
   mediaMid?: string
+  /** 可直接播放的完整音频地址（Jamendo 等免登录源） */
+  url?: string
 }
 
 /** 歌单元信息 */
