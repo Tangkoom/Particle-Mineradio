@@ -1,9 +1,10 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-use tauri::{
-    menu::{Menu, MenuItem},
-    tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    Manager,
-};
+mod installer;
+mod tray;
+mod util;
+mod windows;
+
+use tauri::Manager;
 
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -34,53 +35,42 @@ fn exit_app(app: tauri::AppHandle) {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    let mode = installer::detect_mode();
+    installer::boot(mode);
+
     tauri::Builder::default()
+        .manage(installer::SetupMode(mode))
+        .manage(windows::ExitAction::default())
         .plugin(tauri_plugin_geolocation::init())
         .plugin(tauri_plugin_opener::init())
-        .setup(|app| {
-            // ===== 系统托盘 =====
-            let show_item = MenuItem::with_id(app, "show", "显示", true, None::<&str>)?;
-            let quit_item = MenuItem::with_id(app, "quit", "退出", true, None::<&str>)?;
-            let menu = Menu::with_items(app, &[&show_item, &quit_item])?;
-
-            TrayIconBuilder::with_id("main-tray")
-                .tooltip("Particle-Mineradio")
-                .icon(app.default_window_icon().unwrap().clone())
-                .menu(&menu)
-                .on_menu_event(|app, event| match event.id.as_ref() {
-                    "show" => {
-                        if let Some(window) = app.get_webview_window("main") {
-                            let _ = window.show();
-                            let _ = window.unminimize();
-                            let _ = window.set_focus();
-                        }
-                    }
-                    "quit" => {
-                        app.exit(0);
-                    }
-                    _ => {}
-                })
-                .on_tray_icon_event(|tray, event| {
-                    // 左键单击托盘：显示窗口
-                    if let TrayIconEvent::Click {
-                        button: MouseButton::Left,
-                        button_state: MouseButtonState::Up,
-                        ..
-                    } = event
-                    {
-                        let app = tray.app_handle();
-                        if let Some(window) = app.get_webview_window("main") {
-                            let _ = window.show();
-                            let _ = window.unminimize();
-                            let _ = window.set_focus();
-                        }
-                    }
-                })
-                .build(app)?;
+        .setup(move |app| {
+            if mode.is_setup() {
+                // 安装 / 卸载模式：只展示安装界面，不加载主界面。
+                installer::show_setup_window(app.handle(), mode);
+            } else {
+                // 正常模式：按配置创建主窗口，并启用托盘与托盘面板。
+                windows::show_main_window(app.handle());
+                tray::setup_tray(app)?;
+            }
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![greet, eval_in_window, exit_app])
+        .invoke_handler(tauri::generate_handler![
+            greet,
+            eval_in_window,
+            exit_app,
+            tray::tray_action,
+            tray::tray_tooltip,
+            windows::set_exit_action,
+            installer::setup_mode,
+            installer::suggested_dir,
+            installer::install_dir,
+            installer::pick_directory,
+            installer::install,
+            installer::launch_app,
+            installer::uninstall,
+            installer::quit
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
