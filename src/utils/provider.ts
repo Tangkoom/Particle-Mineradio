@@ -1,6 +1,7 @@
 import { useUserStore } from '@src/stores/user'
 import {
   ensureBridge,
+  fetchProfile,
   getDailySongs,
   getLyric,
   getPlaylistSongs,
@@ -19,6 +20,7 @@ import {
 } from './netease'
 import {
   ensureQQBridge,
+  fetchQQProfile,
   getQQDailySongs,
   getQQPlaylistSongs,
   getQQRecentSongs,
@@ -41,6 +43,21 @@ export async function ensureActiveBridge(): Promise<void> {
     await ensureQQBridge()
   } else {
     await ensureBridge()
+  }
+}
+
+/** 重新拉取当前活动账号资料，失败时保留旧资料 */
+export async function refreshActiveProfile(
+  provider?: MusicProvider
+): Promise<void> {
+  const store = useUserStore()
+  const target = provider ?? store.activeProvider
+  try {
+    const profile =
+      target === 'qq' ? await fetchQQProfile() : await fetchProfile()
+    if (profile) store.setProfile(profile)
+  } catch {
+    // 登录态暂不可用时保留已持久化的资料
   }
 }
 

@@ -135,6 +135,7 @@
                       :src="nextSong?.coverUrl || ''"
                       :alt="nextSong?.name || ''"
                       class="w-17 h-17 rounded-xl bg-[#ccc] object-cover shrink-0"
+                      @error="hideBrokenCover"
                     />
                     <div
                       class="flex flex-col h-full justify-between ml-2 min-w-0"
@@ -342,6 +343,12 @@ const nextSong = computed(() => {
   if (!q.length || i < 0) return null
   return q[(i + 1) % q.length]
 })
+
+/** 封面 404 时隐藏，避免出现浏览器破图图标 */
+const hideBrokenCover = (event: Event): void => {
+  const img = event.target as HTMLImageElement
+  img.style.visibility = 'hidden'
+}
 
 /** 与 dayjs 的 day() 一一对应（0 = 周日） */
 const WEEKDAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const

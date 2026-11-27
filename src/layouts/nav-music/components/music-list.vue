@@ -51,6 +51,7 @@
             :alt="entry.name"
             class="w-9.5 h-9.5 rounded-md object-cover bg-[rgba(255,255,255,0.05)]"
             loading="lazy"
+            @error="hideBrokenCover"
           />
           <div class="min-w-0 flex-1">
             <div class="text-[12px] text-[rgba(255,255,255,0.9)] truncate">
@@ -96,6 +97,12 @@ const playerStore = usePlayerStore()
 
 const musicList = ref<NeteaseSong[]>([])
 const loading = ref(false)
+
+/** 封面 404 时隐藏，避免出现浏览器破图图标 */
+const hideBrokenCover = (event: Event): void => {
+  const img = event.target as HTMLImageElement
+  img.style.visibility = 'hidden'
+}
 
 /** 每项内容高度：img 38 + padding 16 + border 2 */
 const ITEM_CONTENT = 56

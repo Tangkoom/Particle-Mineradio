@@ -164,7 +164,8 @@ import type { MusicProvider, NeteaseProfile } from '@src/utils/netease'
 import {
   getActiveUserPlaylists,
   loginWithProvider,
-  logoutProvider
+  logoutProvider,
+  refreshActiveProfile
 } from '@src/utils/provider'
 import { useUserStore } from '@src/stores/user'
 import { usePlayerStore } from '@src/stores/player'
@@ -373,6 +374,7 @@ const activateProvider = async (provider: MusicProvider): Promise<void> => {
 const connectProvider = async (provider: MusicProvider): Promise<void> => {
   if (logging.value) return
   if (userStore.accounts[provider].profile) {
+    await refreshActiveProfile(provider)
     await activateProvider(provider)
     return
   }

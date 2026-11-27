@@ -35,11 +35,12 @@
             />
           </svg>
           <img
-            v-if="playerStore.current?.coverUrl"
+            v-if="playerStore.current?.coverUrl && !coverError"
             :src="playerStore.current.coverUrl"
             :alt="playerStore.current.name"
             class="w-10 h-10 rounded-full object-cover bg-[#171717] cover-img"
             :class="{ 'is-playing': playerStore.isPlaying }"
+            @error="coverError = true"
           />
           <div
             v-else
@@ -227,6 +228,14 @@ const playerStore = usePlayerStore()
 /** 歌词面板开关：父级通过 openLyrics 事件控制显示 */
 const lyricsActive = ref<boolean>(false)
 const showQualityMenu = ref<boolean>(false)
+const coverError = ref<boolean>(false)
+
+watch(
+  () => playerStore.current?.coverUrl,
+  () => {
+    coverError.value = false
+  }
+)
 
 const qualityOptions = NETEASE_QUALITY_OPTIONS
 const currentQualityLabel = computed(

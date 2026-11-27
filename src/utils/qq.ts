@@ -137,15 +137,19 @@ function normalizeProfile(
   if (!body || typeof body !== 'object') return null
   const data = body.data ?? body.profile ?? body.creator ?? body.result ?? {}
   const creator = data.creator ?? data.user ?? data.profile ?? data
+  const nickCandidates = [
+    creator?.nick,
+    creator?.nickname,
+    creator?.name,
+    creator?.hostname,
+    data?.nick,
+    data?.nickname,
+    cookieNick
+  ]
   const nick =
-    creator?.nick ??
-    creator?.nickname ??
-    creator?.name ??
-    creator?.hostname ??
-    data?.nick ??
-    data?.nickname ??
-    cookieNick ??
-    ''
+    nickCandidates
+      .map((value) => String(value ?? '').trim())
+      .find((value) => value.length > 0) ?? ''
   const avatar =
     creator?.headpic ??
     creator?.avatar ??
@@ -162,7 +166,7 @@ function normalizeProfile(
     data?.encrypt_uin ||
     ''
   const userId = Number(String(rawId).replace(/^o/i, '').replace(/\D/g, '')) || 0
-  if (!userId || !nick) return null
+  if (!userId) return null
   const vipRaw =
     data?.vipType ??
     data?.vip_type ??
@@ -232,6 +236,12 @@ export function ensureQQBridge(): Promise<void> {
     throw error
   })
   return bridgePromise
+}
+
+/** 重新读取当前 QQ 登录账号的资料，用于刷新昵称/头像 */
+export async function fetchQQProfile(): Promise<NeteaseProfile | null> {
+  await ensureQQBridge()
+  return queryQQProfile(BRIDGE_LABEL)
 }
 
 async function createQQBridge(): Promise<void> {
